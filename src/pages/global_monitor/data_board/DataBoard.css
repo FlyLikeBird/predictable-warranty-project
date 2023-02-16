@@ -1,0 +1,43 @@
+.flex-tabs:global(.ant-tabs){
+    height:calc( 100% - 60px);
+}
+
+.flex-tabs:global(.ant-tabs) :global(.ant-tabs-content) {
+    height:100%;
+}
+.flex-tabs:global(.ant-tabs) :global(.ant-tabs-content) :global(.ant-tabs-tabpane) {
+    height:100%;
+}
+.drag-container {
+    display:flex;
+    height:100%;
+}
+.drag-container > div {
+    flex:1;
+}
+.drag-list {
+    height:100%;
+    padding:1rem;
+    border-right:1px solid #f0f0f0; 
+}
+
+.drag-list-header {
+    display:flex;
+    justify-content:space-between; 
+    margin-bottom:0.5rem;
+}
+.drag-list-content {
+    
+}
+.drag-list-item {
+    cursor: move;
+    display:flex;
+    align-items: center;
+    margin-bottom:0.5rem;
+}
+.drag-list-item.border-bottom {
+    border-bottom: 2px dashed #1890ff;
+}
+.drag-list-item.border-top {
+    border-top: 2px dashed #1890ff;
+}

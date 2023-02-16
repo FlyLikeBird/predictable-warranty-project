@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>末晨曦吖</title>
+
+</head>
+
+<body>
+
+    <div id="app">
+
+       <div class="content">
+
+            <div class="page">滚动页面1</div>
+
+            <div class="page">滚动页面2</div>
+
+            <div class="page">滚动页面3</div>
+
+       </div>
+
+    </div>
+
+    <script>
+
+       let content = document.querySelector('.content')
+
+       content.addEventListener('wheel',(event) => {
+
+            event.preventDefault();
+            console.log(event.deltaY);
+            content.scrollLeft += event.deltaY
+            console.log(content.scrollLeft);
+            // 横向滚动的定位点判断,根据父元素的区域和子节点的宽度总和作对比，再计算出
+       })
+
+    </script>
+
+</body>
+
+<style scoped>
+
+    html, body{
+
+        padding: 0;
+
+        margin: 0;
+        height:100%;
+    }
+    #app {
+        height:100%;
+    }
+    .content{
+
+        display: flex;
+
+        overflow-x: auto;
+        overflow-y:hidden;
+        height:100%;
+    }
+
+    .page{
+
+        width: 100%;
+
+        height: 100%;
+
+        flex-shrink: 0;
+
+    }
+
+    .page:nth-child(1){
+
+        background: red;
+
+    }
+
+    .page:nth-child(2){
+
+        background: blue;
+
+    }
+
+    .page:nth-child(3){
+
+        background: yellow;
+
+    }
+
+</style>
+
+</html> 
