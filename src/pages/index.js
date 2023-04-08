@@ -59,15 +59,15 @@ function ProjectIndex({ dispatch, user, children }){
                             :
                             null 
                         }
-                        <div className={ theme==='dark' ? style['sidebar-container'] + ' ' + style['dark'] : style['sidebar-container']} style={{ width:collapsed ? '0' : '10%' }} >
+                        <div className={ theme==='dark' ? style['sidebar-container'] + ' ' + style['dark'] : style['sidebar-container']} style={{ width:collapsed ? '0' : '12%' }} >
                             <Menu userMenu={userMenu} currentMenu={currentMenu} userInfo={userInfo} theme={theme} />
                             <div onClick={()=>{
                                 dispatch({ type:'user/toggleCollapsed' });
-                            }} style={{ cursor:'pointer', position:'absolute', zIndex:'2', right:'1rem', bottom:'1rem', background:'#f7f8fa', padding:'4px 6px' }}>
+                            }} style={{ cursor:'pointer', position:'absolute', zIndex:'2', right:'0', bottom:'1rem', background:'#f7f8fa', padding:'4px 6px' }}>
                                 <MenuFoldOutlined style={{ color:'#777d88' }} />
                             </div>
                         </div>
-                        <div className={style['content-container']} style={{ width:collapsed ? '100%' : '90%' }}>                  
+                        <div className={style['content-container']} style={{ width:collapsed ? '100%' : '88%' }}>                  
                             { children }        
                         </div>
                     </div>

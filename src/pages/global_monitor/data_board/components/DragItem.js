@@ -5,7 +5,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import style from '../DataBoard.css';
 
-const DragItem = ({ data, list, index, onChecked, onMoveRows })=>{
+const DragItem = ({ data, list, index, maps, onChecked, onMoveRows })=>{
     const itemRef = useRef(null);
     const [{ }, drag] = useDrag({
         type:'sort',
@@ -34,8 +34,8 @@ const DragItem = ({ data, list, index, onChecked, onMoveRows })=>{
     return (
       
         <div ref={itemRef} className={ style['drag-list-item'] + ' ' + ( isOver ? style[dropClassName] : '' )}  style={{ padding:'6px 0' }} >
-            <Switch size='small' style={{ marginRight:'0.5rem' }} checked={data.isSelected} onChange={()=>onChecked(data.title)} />
-            <div style={{ flex:'1' }}>{ data.title }</div>
+            <Switch size='small' style={{ marginRight:'0.5rem' }} checked={data.a} onChange={()=>onChecked(data.key)} />
+            <div style={{ flex:'1' }}>{ maps[data.key].title || maps[data.key] }</div>
             <div><MenuOutlined style={{ float:'right', verticalAlign:'middle' }} /></div>
             
         </div>

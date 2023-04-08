@@ -100,11 +100,11 @@ const Header = ({ onDispatch, msg, routePath, userInfo, theme  })=> {
     return (
         <div ref={containerRef} className={ theme === 'dark' ? style['container'] + ' ' + style['dark'] : style['container']}>
             <div className={style['content-container']}>
-                <div style={{ width:'10%', padding:'0 1rem' }}>
-                    <img src={LogoImg} style={{ width:'50px' }} />
+                <div style={{ width:'12%', padding:'0 1rem' }}>
+                    {/* <img src={LogoImg} style={{ width:'50px' }} /> */}
                     <span style={{ fontSize:'1.4rem', margin:'0 0.5rem' }}>预测性维护</span>
                 </div>
-                <div style={{ width:'90%', display:'inline-flex', justifyContent:'space-between', alignItems:'center', paddingLeft:'1rem' }}>
+                <div style={{ width:'88%', display:'inline-flex', justifyContent:'space-between', alignItems:'center', paddingLeft:'2rem' }}>
                     <div style={{ color:'rgba(0, 0, 0, 0.65)' }}>
                         <span><HomeOutlined /></span>
                         {

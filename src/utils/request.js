@@ -1,5 +1,4 @@
 import fetch from 'dva/fetch';
-// import config from '../../../config';
 
 function parseJSON(response) {
     return response.json();
@@ -25,7 +24,7 @@ function checkStatus(response) {
 export default function request(url, options, otherProxy) {
     let config = window.g;
     let proxy = otherProxy || config.proxy;
-    let finalURL = `http://${config.apiHost}${proxy}${url}`;
+    let finalURL = `http://${config.apiHost}${url}`;
     return fetch(finalURL, options)
         .then(checkStatus)
         .then(parseJSON)

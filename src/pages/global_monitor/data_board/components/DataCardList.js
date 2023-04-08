@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef  } from 'react';
-import { LeftCircleOutlined, RightCircleOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import style from '@/pages/IndexPage.css';
 
-function DataCardList({ data }){
+function DataCardList({ list, data, fieldMaps }){
     const containerRef = useRef();
-    const [visible, setVisible] = useState(false);
     
     useEffect(()=>{
         let container = containerRef.current;
@@ -18,30 +17,34 @@ function DataCardList({ data }){
     },[])
     return (
         // 高度高于外部容器，确认横向滚动条被外部容器隐藏掉
-        <div ref={containerRef} style={{ position:'relative', height:'160px', whiteSpace:'nowrap', overflow:'auto hidden' }}>
+        <div ref={containerRef} style={{ cursor:'w-resize', position:'relative', height:'160px', whiteSpace:'nowrap', overflow:'auto hidden' }}>
             {/* 横向滚动条的样式重置 */}
             {
-                data && data.length 
+                list && list.length 
                 ?
-                data.map((item,index)=>(
+                list.map((item,index)=>(
                     <div className={style['card-container-wrapper']} key={item.title} style={{ width:'16.6%' }}>
                         <div className={style['card-container']} style={{ padding:'1rem', boxShadow:'none', display:'flex', flexDirection:'column', justifyContent:'space-around' }}>
-                            <div style={{ fontWeight:'bold' }}>{ item.title }</div>
+                            <div style={{ fontWeight:'bold' }}>{ fieldMaps[item.key].title }</div>
                             <div>
-                                <span style={{ fontSize:'1.6rem', fontWeight:'bold' }}>{ item.value }</span>
-                                <span style={{ fontSize:'0.8rem' }}>{ item.unit }</span>
+                                <span style={{ fontSize:'2rem', fontWeight:'bold', color:fieldMaps[item.key].color || 'rgba(0, 0, 0, 0.65)' }}>{ data[item.key] ? data[item.key][fieldMaps[item.key].dataIndex] : 0 }</span>
+                                <span style={{ fontSize:'0.8rem', marginLeft:'4px' }}>{ fieldMaps[item.key].unit }</span>
                             </div>
-                            <div style={{ fontSize:'0.8rem'}}>
+                            <div>
                                 {
-                                    item.params && item.params.length 
+                                    fieldMaps[item.key].subTitle && fieldMaps[item.key].subTitle.length 
                                     ?
-                                    item.params.map((item)=>(
-                                        <span key={item.text} style={{ marginRight:'1rem' }}>
-                                            <span style={{ marginRight:'4px'}}>{ item.text }</span>
-                                            <span style={{ color:item.color ? item.color : '#ed5a5a'}}>{ item.value }</span>
-                                            <span>{ item.unit }</span>
-                                        </span>
-                                    ))
+                                    fieldMaps[item.key].subTitle.map((sub)=>{
+                                        let obj = data[item.key] || {};
+                                        return (<span key={item.dataIndex} style={{ marginRight:'1rem' }}>
+                                            <span style={{ marginRight:'4px' }}>{ sub.title }</span>
+                                            <span style={{ color: obj[sub.dataIndex] > 0 ? '#f53f3f' : '#14cb3f' }}>
+                                                { !obj[sub.dataIndex] || !sub.hasArrow ? null : obj[sub.dataIndex] > 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined /> } 
+                                                { obj[sub.dataIndex] || 0.0 }
+                                                { sub.unit }
+                                            </span>
+                                        </span>)
+                                    })
                                     :
                                     null
                                 }
@@ -56,11 +59,5 @@ function DataCardList({ data }){
     )
 }
 
-function areEqual(prevProps, nextProps){
-    if ( prevProps.data !== nextProps.data ){
-        return false;
-    } else {
-        return true;
-    }
-}
-export default React.memo(DataCardList, areEqual);
+
+export default React.memo(DataCardList);

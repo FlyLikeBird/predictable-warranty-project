@@ -1,0 +1,146 @@
+.report-container {
+    height:100%;
+    font-size:1rem;
+    background-color:#fff;
+    overflow: hidden auto;
+    /* box-shadow:0 3px 6px -4px rgba(0,0,0,.12), 0 6px 16px 0 rgba(0,0,0,.08); */
+}
+/* 
+    报告头部样式
+*/
+
+
+/* 
+    页面通用样式
+*/
+.page-container {
+    width:860px;
+    height:1070px;
+    margin:0 auto;
+    position:relative;
+    background-color:#fff;
+    /* border:1px solid #ccc; */
+    padding:1rem;
+}
+
+.page-container .page-title {
+    height:2.4rem;
+    line-height:2.4rem;
+    display:flex;
+    align-items: center;
+    border-radius:6px;
+    background:#eef3ff;
+    margin-bottom:1rem;
+}
+.page-title .text-container {
+    background:#165dff;
+    height:100%;
+    padding:0 2rem;
+    font-weight:bold;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    color:#fff;
+}
+.page-container .page-title .symbol {
+    width:10px;
+    height:100%;
+    background:#fff;
+    transform:skewX(-18deg) translateX(-5px)
+}
+
+
+.page-container .page-head-mark {
+    display:inline-block;
+    vertical-align: top;
+    width:50%;
+    height:6px;
+}
+
+.page-container .page-symbol {
+    position:absolute;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    left:-4px;
+    margin-top:-4px;
+    background-color:#00b0f0;
+}
+
+.page-container .page-footer {
+    white-space:nowrap;
+    position: absolute;
+    bottom:20px;
+    left:50%;
+    width:920px;
+    margin-left:-460px;
+}
+
+/* 
+    页面通用样式------结束
+*/
+
+/* 
+    页面布局样式
+*/
+
+.layout-container {
+    display:block;
+    margin-bottom:10px;
+}
+
+.item-container-wrapper {
+    display:inline-block;
+    vertical-align: top;
+    height:100%;
+    width:50%;
+    padding-right:10px;
+}
+
+.item-container-wrapper:last-child {
+    padding-right:0;
+}
+
+.item-container {
+    width:100%;
+    height:100%;
+    background-color:#f7f7f7;
+}
+
+.item-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.item-sub-title {
+    font-size:0.8rem;
+}
+
+.item-data {
+    font-size:1.6rem;
+    color:#1890ff;
+    font-weight:bold;
+    line-height:1.6rem;
+}
+
+/* 
+    flex布局样式
+*/
+.flex-container {
+    display:flex;
+    align-items: center;
+    margin-bottom:10px;
+}
+
+.flex-container .flex-item {
+}
+
+.flex-container .flex-item .data {
+    font-size:1.6rem;
+    color:#1890ff;
+    font-weight:bold;
+    line-height:1.6rem;
+}
+
+.container .select-container {
+    display:inline-block;
+}

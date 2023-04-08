@@ -3,7 +3,6 @@ import {
     login, userAuth, agentUserAuth, 
     fetchSessionUser, getNewThirdAgent, setCompanyLogo, 
     getWeather, getThirdAgentInfo, 
-    getCameraAccessToken,
     getAlarmTypes, getTypeRule, setTypeRule
 } from '../services/userService';
 import { md5, encryptBy, decryptBy } from '../utils/encryption';
@@ -56,16 +55,65 @@ function reconnect(url, data, companyId, dispatch){
     },2000)
 }
 let socket = null;
-let menuList = [
-    { menu_code:'global_monitor', menu_name:'监控中心', menu_id:1, child:[{ menu_code:'data_board', menu_name:'数据看板', menu_id:2 }, { menu_code:'3d', menu_name:'3D可视化', menu_id:10 }]},
-    { menu_code:'mach_manage', menu_name:'设备监控', menu_id:3, child:[{ menu_code:'mach_manage_archive', menu_name:'设备档案', menu_id:4 }]}
+let menuData = [
+    { menu_code:'global_monitor', menu_name:'监控中心', menu_id:1, child:[{ menu_code:'data_board', menu_name:'数据看板', menu_id:2 }]},
+    { 
+        menu_code:'mach_manage', 
+        menu_name:'设备监控', 
+        menu_id:3, 
+        child:[
+            { menu_code:'mach_manage_sensor', menu_name:'传感器', menu_id:100 },
+            { menu_code:'mach_manage_archive', menu_name:'设备档案', menu_id:4 },
+            { menu_code:'mach_manage_running', menu_name:'运行监控', menu_id:5 }
+        ]
+    },
+    {
+        menu_code:'alarm_manage',
+        menu_name:'告警监控',
+        menu_id:6,
+        child:[
+            { menu_code:'alarm_manage_list', menu_name:'告警列表', menu_id:7 },
+            { menu_code:'alarm_manage_analysis', menu_name:'告警分析', menu_id:8 },
+            { menu_code:'alarm_manage_setting', menu_name:'告警设置', menu_id:9 }
+        ]
+    },
+    {
+        menu_code:'data_report',
+        menu_name:'数据报表',
+        menu_id:10,
+        child:[
+            { menu_code:'data_report_running', menu_name:'运行报表', menu_id:11 },
+            { menu_code:'data_report_cost', menu_name:'成本报表', menu_id:12 },
+            { menu_code:'data_report_pdf', menu_name:'诊断报告', menu_id:16 }
+        ]
+    },
+    {
+        menu_code:'operation_manage',
+        menu_name:'智慧运维',
+        menu_id:13,
+        child:[
+            { menu_code:'operation_manage_maintain', menu_name:'保养计划', menu_id:14 },
+            { menu_code:'operation_manage_order', menu_name:'工单列表', menu_id:15 }
+        ]
+    },
+    {
+        menu_code:'sys_manage',
+        menu_name:'系统管理',
+        menu_id:16,
+        child:[
+            { menu_code:'sys_manage_user', menu_name:'用户管理', menu_id:17 },
+            { menu_code:'sys_manage_role', menu_name:'角色权限', menu_id:18 },
+            { menu_code:'sys_manage_log', menu_name:'系统日志', menu_id:19 },
+            { menu_code:'sys_manage_pwd', menu_name:'修改密码', menu_id:20 }
+        ]
+    }
 ]
 const initialState = {
     userInfo:{},
     userMenu:[],
     companyList:[],
     // 全局的公司id
-    company_id:'',
+    companyId:'',
     currentCompany:{},
     currentMenu:{},
     // 配置动态路由
@@ -94,7 +142,9 @@ const initialState = {
     endDate:moment(date),
     timeType:'1',
     // 打开用户音频权限
-    audioAllowed:false
+    audioAllowed:false,
+    // 小屏终端下 缩放比例 75%
+    
 };
 
 export default {
@@ -106,11 +156,11 @@ export default {
                 let pathname = location.pathname;
                 // 登录接口
                 if ( location.pathname === '/login' ) {
-                    let str = window.location.host.split('.');
-                    let matchResult = agentReg2.exec(str[0]);
-                    let temp = matchResult ? matchResult[1] : '';
-                    dispatch({ type:'fetchNewThirdAgent', payload:temp });
-                    return ;
+                    // let str = window.location.host.split('.');
+                    // let matchResult = agentReg2.exec(str[0]);
+                    // let temp = matchResult ? matchResult[1] : '';
+                    // dispatch({ type:'fetchNewThirdAgent', payload:temp });
+                    // return ;
                 }
                 if ( pathname !== '/login') {
                     new Promise((resolve, reject)=>{
@@ -132,23 +182,22 @@ export default {
                 if ( !authorized ){
                     // 判断是否是服务商用户新开的公司标签页
                     let matchResult = companyReg.exec(query);
-                    let company_id = matchResult ? matchResult[2] : null;
-                    let user_id = matchResult ? matchResult[1] : null;
+                    let companyId = matchResult ? matchResult[2] : ( localStorage.getItem('companyId') || null );
+                    let userId = matchResult ? matchResult[1] : null;
                     let isFrame = matchResult && matchResult[3] === 'frame' ? true : false;
-                    if ( user_id ){
-                        localStorage.setItem('user_id', user_id);
-                    }
-                    // let { data } = yield call( matchResult ? agentUserAuth : userAuth, matchResult ? { app_type:1, company_id } : { app_type:1 } );
-                    // if ( data && data.code === '0' ){
-                        // 先判断是否是第三方代理商账户
-                        // if ( !Object.keys(newThirdAgent).length ) {
-                        //     let str = window.location.host.split('.');
-                        //     let matchResult = agentReg2.exec(str[0]);
-                        //     let temp = matchResult ? matchResult[1] : '';
-                        //     yield put({ type:'fetchNewThirdAgent', payload:temp });
-                        // }
-                        // yield put.resolve({ type:'fetchAlarmTypes'});
-                        yield put({type:'setUserInfo', payload:{ data:{}, company_id, fromAgent:matchResult ? true : false, isFrame } });
+                    if ( localStorage.getItem('userId')) {
+                        // localStorage中存储的状态设为全局状态
+                        yield put({type:'setUserInfo', payload:{ 
+                            data:{
+                                userId:userId || localStorage.getItem('userId'),
+                                userName:localStorage.getItem('userName'),
+                                phone:localStorage.getItem('phone'),
+                                companyId,
+                                menuList:JSON.parse(localStorage.getItem('menuList'))
+                            }, 
+                            fromAgent:matchResult ? true : false, 
+                            isFrame 
+                        }});
                         yield put({ type:'setContainerWidth' });
                         // yield put({type:'weather'});
                         if ( resolve && typeof resolve === 'function') resolve();
@@ -160,11 +209,9 @@ export default {
                         // let config = window.g;
                         // let socketCompanyId = company_id ? company_id : data.data.companys.length ? data.data.companys[0].company_id : null ;
                         // socket = createWebSocket(`ws://${config.socketHost}:${config.socketPort}`, data.data, socketCompanyId, matchResult ? true : false, dispatch);
-                        
-                    // } else {
-                    //     // 登录状态过期，跳转到登录页重新登录(特殊账号跳转到特殊登录页)
-                    //     yield put({ type:'loginOut'});
-                    // }
+                    } else {
+                        yield put({ type:'loginOut'});
+                    }                 
                 } 
                 if ( resolve && typeof resolve === 'function') resolve();
             } catch(err){
@@ -180,40 +227,25 @@ export default {
         },
         *login(action,{ call, put, select }){
             try {
-                let { user_name, password } = action.payload;
-                let { user:{ thirdAgent} } = yield select();
-                let { resolve, reject } = action;
-                // if ( localStorage.getItem('user_id')){
-                //     message.info('已有登录用户，请进入主页先退出再登录')
-                //     return;
-                // }
-               
-                password = md5(password, user_name);
-                var { data }  = yield call(login, {user_name, password});
-                if ( data && data.code === '0'){   
-                    let { user_id, user_name, agent_id, companys } = data.data;
-                    let companysMap = companys.map((item)=>{
-                        return { [encodeURI(item.company_name)]:item.company_id };
-                    })
-                    let timestamp = parseInt(new Date().getTime()/1000);
+                let { values, resolve, reject } = action.payload || {};
+                let { userName, password } = values;
+                // password = md5(password, user_name);
+                var { data }  = yield call(login, { userName, password });
+                if ( data && data.code === 200 ){   
+                    let {  companyId, userName, userId, phone, menuList, token } = data.data;
                     //  保存登录的时间戳,用户id,公司id 
-                    localStorage.setItem('timestamp', timestamp);
-                    localStorage.setItem('user_id', user_id);
-                    localStorage.setItem('user_name', user_name);
-                    localStorage.setItem('companysMap', JSON.stringify(companysMap));
-                    localStorage.setItem('agent_id', agent_id);
-                    localStorage.setItem('third_agent', JSON.stringify(thirdAgent));
+                    localStorage.setItem('companyId', companyId);
+                    localStorage.setItem('userId', userId);
+                    localStorage.setItem('userName', userName);
+                    localStorage.setItem('phone', phone);
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('menuList', JSON.stringify( menuList || []));
                     yield put({ type:'setAudioAllowed' });
-                    //  登录后跳转到默认页面
-                    // 如果是服务商用户则跳转到中台监控页
-                    if ( agent_id ) {
-                        yield put(routerRedux.push('/agentMonitor'));
-                    } else {
-                        // 跳转到项目列表页
-                        yield put(routerRedux.push('/energy'));
-                    }
+                    //  登录后跳转到默认页面               
+                    // 跳转到项目列表页
+                    yield put(routerRedux.push('/'));            
                 } else {
-                    if (reject) reject( data && data.msg );
+                    if (reject) reject( data && data.message );
                 }
             } catch(err){
                 console.log(err);
@@ -227,13 +259,12 @@ export default {
         },
         *loginOut(action, { call, put, select }){
             let { user:{ userInfo, thirdAgent }} = yield select();
-            yield put({type:'clearUserInfo'});
-            yield put({ type:'fields/cancelAll'});
-            yield put(routerRedux.push('/login'));
             if ( socket && socket.close ){
                 socket.close();
                 socket = null;
             }
+            yield put({type:'clearUserInfo'});
+            yield put(routerRedux.push('/login'));
         },
         
         *fetchNewThirdAgent(action, { put, select, call}){
@@ -294,13 +325,13 @@ export default {
         }
     },
     reducers:{
-        setUserInfo(state, { payload:{ data, company_id, fromAgent, isFrame }}){
-            let { menuData, companys } = data;
+        setUserInfo(state, { payload:{ data, fromAgent, isFrame }}){
+            let { menuList, companyId } = data;
             let currentCompany = null;
             // let currentCompany = company_id ? companys.filter(i=>i.company_id == company_id)[0] : companys[0];
-            menuData = menuList;
             // test
-            let routeConfig = menuData.reduce((sum,menu)=>{
+            menuList = menuData;
+            let routeConfig = menuList.reduce((sum,menu)=>{
                 sum[menu.menu_code] = {
                     menu_name:menu.menu_name,
                     menu_id:menu.menu_id,
@@ -321,7 +352,7 @@ export default {
                 return sum;
             },{});
             // console.log(routeConfig);
-            return { ...state, userInfo:data, userMenu:menuData, companyList:companys || [], company_id: currentCompany && currentCompany.company_id, currentCompany:currentCompany || {}, routeConfig, fromAgent, authorized:true, isFrame };
+            return { ...state, userInfo:data, userMenu:menuList, companyId, currentCompany:currentCompany || {}, routeConfig, fromAgent, authorized:true, isFrame };
         },
         setRoutePath(state, { payload }){
             let routes = payload.split('/').filter(i=>i);
@@ -334,10 +365,12 @@ export default {
                 routes = [routeConfig['global_monitor'], routeConfig['data_board']];
             } else {
                 currentMenu = routeConfig[routes[routes.length-1]] ? routeConfig[routes[routes.length - 1]] : {};
+                
                 routes = routes.map(route=>{
                     return routeConfig[route]
                 });
             }
+            console.log('change menu');
             return { ...state, routePath:routes, currentMenu : currentMenu || {} };
         },
         getAgentAlarm(state, { payload:{ data }}){
@@ -368,7 +401,7 @@ export default {
         toggleTimeType(state, { payload }){
             let startDate, endDate;
             let date = new Date();
-            if ( payload === '1'){
+            if ( payload === '3'){
                 // 小时维度
                 startDate = endDate = moment(date);
             }
@@ -377,7 +410,7 @@ export default {
                 startDate = moment(date).startOf('month');
                 endDate = moment(date).endOf('month');
             }
-            if ( payload === '3'){
+            if ( payload === '1'){
                 // 月维度
                 startDate = moment(date).startOf('year');
                 endDate = moment(date).endOf('year');

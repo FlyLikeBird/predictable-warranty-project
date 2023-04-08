@@ -105,18 +105,16 @@ export function getWeather(data = {}){
         }); 
 }
 
-
-export function login(data = {}){
-    let timestamp = parseInt(new Date().getTime()/1000);
-    let token = authToken(timestamp);
-    data.token = token;
-    let str = translateObj(data);
-    return request('/login/login', { 
+export function login(data={}){
+    
+    let { userName, password } = data;
+    let formData = new FormData();
+    formData.append('userName', userName);
+    formData.append('password', password);
+    formData.append('isApp', 1);
+    return request('/sys/user/bmLogin', { 
         method:'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
+        body:formData
         }); 
 }
 

@@ -1,0 +1,8 @@
+.form-container:global(.ant-form) :global(.ant-form-item){
+    margin-bottom:1rem;
+}
+
+.form-container:global(.ant-form) .custom-form-item {
+    display:inline-block;
+    width:50%;
+}

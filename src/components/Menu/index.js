@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { history } from 'umi';
 import { Link } from 'umi';
 import { Menu, Tooltip, Button } from 'antd';
-import { InteractionOutlined, UserOutlined, BarsOutlined, DashboardOutlined, ThunderboltOutlined, FileTextOutlined, SettingOutlined, SearchOutlined, FormOutlined, AreaChartOutlined, AccountBookOutlined, BarChartOutlined, PrinterOutlined, ScheduleOutlined, ProfileOutlined, PullRequestOutlined, AlertOutlined, DesktopOutlined } from '@ant-design/icons';
+import { InteractionOutlined, UserOutlined, BarsOutlined, DashboardOutlined, ThunderboltOutlined, FileTextOutlined, SettingOutlined, HddOutlined, SearchOutlined, FormOutlined, AreaChartOutlined, AccountBookOutlined, BarChartOutlined, PrinterOutlined, ScheduleOutlined, ProfileOutlined, PullRequestOutlined, AlertOutlined, DesktopOutlined } from '@ant-design/icons';
 import style from './Menu.css';
 
 const { SubMenu } = Menu;
@@ -20,8 +20,9 @@ const IconsObj = {
     'ele_quality':<ThunderboltOutlined />,
     'energy_eff':<BarChartOutlined />,
     'alarm_manage':<AlertOutlined />,
-    'stat_report':<FileTextOutlined />,
-    'system_config':<SettingOutlined />,
+    'data_report':<FileTextOutlined />,
+    'operation_manage':<HddOutlined />,
+    'sys_manage':<SettingOutlined />,
     'analyze_manage':<SearchOutlined />
 }
 
@@ -122,12 +123,5 @@ const MenuComponent = ({ userMenu, currentMenu, userInfo, theme })=>{
     )
 }
 
-function areEqual(prevProps, nextProps){
-    if ( prevProps.userMenu !== nextProps.userMenu || prevProps.currentMenu !== nextProps.currentMenu || prevProps.userInfo !== nextProps.userInfo || prevProps.theme !== nextProps.theme ) {
-        return false;
-    } else {
-        return true;
-    }
-}
 
-export default React.memo(MenuComponent, areEqual);
+export default React.memo(MenuComponent);

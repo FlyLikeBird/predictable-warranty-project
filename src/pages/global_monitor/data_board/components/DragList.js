@@ -6,11 +6,11 @@ import { DndProvider } from 'react-dnd';
 import DragItem from './DragItem';
 import style from '../DataBoard.css';
 
-function DragList({ title, data, onUpdateItems }){
+function DragList({ title, data, maps, onUpdateItems }){
     const handleChecked = key=>{
         let newArr = data.map(item=>{
-            if ( item.title === key ) {
-                return { ...item, isSelected:!item.isSelected };
+            if ( item.key === key ) {
+                return { ...item, a:item.a === 1 ? 0 : 1 };
             } else {
                 return item;
             }
@@ -33,7 +33,7 @@ function DragList({ title, data, onUpdateItems }){
                 <div className={style['drag-list-content']}>             
                 {
                     data.map((item, index)=>(
-                        <DragItem key={item.title} data={item} index={index} onChecked={handleChecked} onMoveRows={handleSort} />
+                        <DragItem key={item.key} data={item} maps={maps} index={index} onChecked={handleChecked} onMoveRows={handleSort} />
                     ))
                 }
                 </div>

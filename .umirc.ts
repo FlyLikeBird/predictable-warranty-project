@@ -39,51 +39,50 @@ export default defineConfig({
         component:'@/pages/index',
         routes:[
             // 设备监控模块
-            // {
-            //     path:'/mach_manage',
-            //     routes:[
-            //         { path:'/mach_manage/mach_manage_archive', component:'@/pages/mach_manage/MachArchiveManager'}
-            //     ]
-            // },
-           
-            // // 统计报表模块
-            // {
-            //     path:'/energy/stat_report',
-            //     routes:[
-            //         { path:'/energy/stat_report/energy_code_report', component:'@/pages/energy_manager/MeterReportManager'},
-            //         { path:'/energy/stat_report/energy_cost_report', component:'@/pages/energy_manager/CostReportManager'},
-            //         { path:'/energy/stat_report/extreme', component:'@/pages/stat_report/ExtremeReport/ExtremeReport'},
-            //         { path:'/energy/stat_report/ele_report', component:'@/pages/stat_report/EleReport/index'},
-            //         { path:'/energy/stat_report/sameReport', component:'@/pages/stat_report/SameRateReport/index'},
-            //         { path:'/energy/stat_report/adjoinReport', component:'@/pages/stat_report/AdjoinRateReport/index'},
-            //         { path:'/energy/stat_report/timereport', component:'@/pages/stat_report/TimeEnergyReport/index'},
-            //     ]
-            // },
-            // // 信息管理
-            // {
-            //     path:'/energy/info_manage_menu',
-            //     routes:[
-            //         { path:'/energy/info_manage_menu/incoming_line', component:'@/pages/info_manager/IncomingLineManager'},
-            //         { path:'/energy/info_manage_menu/quota_manage', component:'@/pages/info_manager/QuotaManager'},
-            //         { path:'/energy/info_manage_menu/manual_input', component:'@/pages/info_manager/ManuallyPage/ManualInfoList'},
-            //         { path:'/energy/info_manage_menu/manual_input/operateInfo/:id', component:'@/pages/info_manager/ManuallyPage/ManualManager'},
-            //         { path:'/energy/info_manage_menu/manual_input/manualMeter/:id', component:'@/pages/info_manager/ManuallyPage/ManualManager'},
-            //         { path:'/energy/info_manage_menu/free_manage', component:'@/pages/info_manager/BillingManager'},
-            //         { path:'/energy/info_manage_menu/field_manage', component:'@/pages/info_manager/FieldManager'},
-            //         { path:'/energy/info_manage_menu/worktime_manage', component:'@/pages/info_manager/WorktimeManager'},
-
-            //     ]
-            // },
-            // // 系统配置
-            // {
-            //     path:'/energy/system_config',
-            //     routes:[
-            //         { path:'/energy/system_config/role_manage', component:'@/pages/system_config/RoleManager'},
-            //         { path:'/energy/system_config/user_manage', component:'@/pages/system_config/AdminManager'},
-            //         { path:'/energy/system_config/system_log', component:'@/pages/system_config/SystemLog'},
-            //         { path:'/energy/system_config/update_password', component:'@/pages/system_config/UpdatePassword'}
-            //     ]
-            // },
+            {
+                path:'/mach_manage',
+                routes:[
+                    { path:'/mach_manage/mach_manage_sensor', component:'@/pages/mach_manage/SensorManager'},
+                    { path:'/mach_manage/mach_manage_archive', component:'@/pages/mach_manage/MachArchiveManager'},
+                    { path:'/mach_manage/mach_manage_running', component:'@/pages/mach_manage/MachRunningManager'},
+                ]
+            },
+            // 告警监控模块
+            {
+                path:'/alarm_manage',
+                routes:[
+                    { path:'/alarm_manage/alarm_manage_list', component:'@/pages/alarm_manage/AlarmList'},
+                    { path:'/alarm_manage/alarm_manage_analysis', component:'@/pages/alarm_manage/AlarmAnalysis'},
+                    { path:'/alarm_manage/alarm_manage_setting', component:'@/pages/alarm_manage/AlarmSetting'}
+                ]
+            },
+            // 统计报表模块
+            {
+                path:'/data_report',
+                routes:[
+                    { path:'/data_report/data_report_running', component:'@/pages/data_report/RunningReport' },
+                    { path:'/data_report/data_report_cost', component:'@/pages/data_report/CostReport'},
+                    { path:'/data_report/data_report_pdf', component:'@/pages/data_report/analysis_report'}
+                ]
+            },
+            // 智慧运维
+            {
+                path:'/operation_manage',
+                routes:[
+                    { path:'/operation_manage/operation_manage_maintain', component:'@/pages/operation_manage/MaintainManager'},
+                    { path:'/operation_manage/operation_manage_order', component:'@/pages/operation_manage/OrderManager'}
+                ]
+            },
+            // 系统配置
+            {
+                path:'/sys_manage',
+                routes:[
+                    { path:'/sys_manage/sys_manage_user', component:'@/pages/sys_manage/UserManager'},
+                    { path:'/sys_manage/sys_manage_role', component:'@/pages/sys_manage/RoleManager'},
+                    { path:'/sys_manage/sys_manage_log', component:'@/pages/sys_manage/LogManager'},
+                    { path:'/sys_manage/sys_manage_pwd', component:'@/pages/sys_manage/UpdatePwd'}
+                ]
+            },
             // 监控中心
             {
                 path:'/global_monitor',

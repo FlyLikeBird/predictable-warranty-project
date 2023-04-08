@@ -25,6 +25,7 @@
     "crypto-js": "^4.1.1",
     "echarts": "^4.7.0",
     "echarts-for-react": "^3.0.1",
+    "element-china-area-data": "^5.0.2",
     "html2canvas": "^1.0.0",
     "jspdf": "^2.3.1",
     "moment": "^2.29.1",
