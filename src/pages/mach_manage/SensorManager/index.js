@@ -62,6 +62,7 @@ function SensorManager({ dispatch, user, mach }){
                             className={style['self-table-container']}
                             columns={columns}
                             dataSource={sensorList}
+                            rowKey=''
                             pagination={{ current:currentPage, total, pageSize:12, showSizeChanger:false }}
                             onChange={pagination=>{
                                 dispatch({type:'mach/fetchSensorList', payload:{ currentPage:pagination.current }});

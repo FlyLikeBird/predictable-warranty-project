@@ -12,6 +12,9 @@
     font-size:12px;
 */
 
+html {
+    zoom:1;
+}
 html, body {
     height: 100%;
     padding:0;
@@ -23,8 +26,9 @@ html, body {
 }
 
 @media (max-width:1440px){
-    html, body{
-        font-size:10px;
+    /* 小屏终端下通过调整html整体缩放deviceRatio */
+    html {
+        zoom:0.8;
     }
 }
 

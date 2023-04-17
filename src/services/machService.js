@@ -33,7 +33,7 @@ export function getMachRunningChart(data = {}){
     let token = apiToken();
     // data.token = token;
     let str = translateObj(data);
-    return request('/equipment/runtimeTrend?' + str, { 
+    return request('/equipment/getRuntimeTrend?' + str, { 
         method:'GET',
         }); 
 }

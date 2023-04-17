@@ -5,21 +5,46 @@ import { Radio } from 'antd';
 import XLSX from 'xlsx';
 import { FileExcelOutlined, FileImageOutlined } from '@ant-design/icons';
 import { downloadExcel } from '@/utils/array';
+import CustomDatePicker from './CustomDatePicker';
 import style from '@/pages/IndexPage.css';
 
-let chartData = [];
-for ( var i=1;i<=10;i++){
-    chartData.push({ date:'8-' + i, preAlarm:10 + Math.random() * 10, alarm:10 + Math.random() * 10 });
-}
-
-function MachAlarmTrend({ item, data, chartMaps }){
+function MachAlarmTrend({ item, data, chartMaps, onDispatch }){
     let echartsRef = useRef();
     let seriesData = [];
-    let categoryData = [], preAlarmData = [], alarmData = [];
-    chartData.forEach(item=>{
-        categoryData.push(item.date);
-        preAlarmData.push(item.preAlarm);
-        alarmData.push(item.alarm);
+    let categoryData = [];
+    let preAlarmData = [], alarmData = [];
+    if ( data ){
+        categoryData = Object.keys(data).sort((a,b)=>{
+            let prevTime = new Date(a).getTime();
+            let nowTime = new Date(b).getTime();
+            return prevTime < nowTime ? -1 : 1;
+        });
+    }
+    
+    // 获取所有告警类型
+    categoryData.forEach(key=>{
+        if ( data[key] && data[key].length ) {
+            let obj = data[key].reduce((sum, cur)=>{
+                if(!sum['0']) {
+                    sum['0'] = 0;
+                }
+                if(!sum['1']) {
+                    sum['1'] = 0;
+                }
+                if ( cur.warningType == '0') {
+                    sum['0'] += cur.totalNum;
+                }
+                if ( cur.warningType == '1') {
+                    sum['1'] += cur.totalNum;
+                }
+                return sum;
+            },{})
+            preAlarmData.push(obj['0']);
+            alarmData.push(obj['1']);
+        } else {
+            preAlarmData.push(0);
+            alarmData.push(0);
+        }
     })
     seriesData.push({
         type:'bar',
@@ -39,11 +64,13 @@ function MachAlarmTrend({ item, data, chartMaps }){
             color:'#f53f3f'
         }
     })
+    
     return (
         <div className={style['card-container']} style={{ boxShadow:'none', padding:'0' }}>
             <div className={style['card-title']}>
                 <div>
                     <span>{ chartMaps[item.key] }</span>
+                    <CustomDatePicker onDispatch={action=>onDispatch({ type:'board/fetchWarningTrend', payload:action })} />            
                 </div>
                 <Radio.Group size='small' onChange={e=>{
                     let value = e.target.value;
@@ -138,6 +165,7 @@ function MachAlarmTrend({ item, data, chartMaps }){
                         },
                         yAxis: {
                             type:'value',
+                            minInterval:1,
                             splitArea: {
                                 show: false
                             },

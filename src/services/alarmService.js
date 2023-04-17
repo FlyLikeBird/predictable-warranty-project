@@ -111,3 +111,13 @@ export function getAlarmTrend(data = {}){
         method:'GET',
         }); 
 }
+
+export function getAlarmRank(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/dataView/getEquipmentWarningRanking?' + str, { 
+        method:'GET',
+        }); 
+}
+

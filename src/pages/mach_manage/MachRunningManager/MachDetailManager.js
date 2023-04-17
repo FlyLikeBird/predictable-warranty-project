@@ -5,11 +5,13 @@ import style from '@/pages/IndexPage.css';
 import SegmentLabel from './components/SegmentLabel';
 import StepLineChart from './components/StepLineChart';
 import AvatarImg from '../../../../public/avatar-bg.png';
+import MachImg from '../../../../public/mach.png';
 import BatteryLowImg from '../../../../public/battery-low.png';
 import BatteryHighImg from '../../../../public/battery-normal.png';
 
 
 function MachDetailManager({ list, statusList, currentMach, onDispatch, onSelect }){
+    
     const infoList = [
         { label:'设备状态', value:'运行中' },
         { label:'电池状态', value:+currentMach.batteryStatus === 1 ? '电量低' : '正常', hasIcon:true },
@@ -51,7 +53,7 @@ function MachDetailManager({ list, statusList, currentMach, onDispatch, onSelect
                                 type='card'
                                 className={style['flex-tabs']}
                                 items={[
-                                    { label:'图片', key:'img', children:(<div>hello world</div>)},
+                                    { label:'图片', key:'img', children:(<div><img src={MachImg} /></div>)},
                                     // { label:'视频    A', key:'video' }
                                 ]}
                             />

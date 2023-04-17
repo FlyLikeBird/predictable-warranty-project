@@ -49,7 +49,8 @@ function CustomDatePicker({ onDispatch, size, noToggle, noDay, noWeek, noMonth }
                 onChange={value=>{
                     let { startDate, endDate } = getDatePicker(value);
                     setTimeType(value);
-                    if ( onDispatch ) onDispatch({ startDate, endDate });
+                    let finalTimeType = value === '10' ? '2' : value;
+                    if ( onDispatch ) onDispatch({ startDate, endDate, timeType:finalTimeType });
                 }}
                 options={[
                     { label:'本日', value:'3' },

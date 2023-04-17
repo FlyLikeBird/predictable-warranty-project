@@ -7,10 +7,9 @@ import RankBarChart from './components/RankBarChart';
 import MultiBarChart from './components/MultiBarChart';
 import style from '@/pages/IndexPage.css';
 
-function AlarmAnalysis({ dispatch, user, mach, alarm, board }){
+function AlarmAnalysis({ dispatch, user, mach, alarm }){
     const { authorized } = user;
-    const { alarmPercent, alarmTrend } = alarm;
-    const { chartSourceData } = board;
+    const { alarmPercent, alarmTrend, alarmRank } = alarm;
     useEffect(()=>{
         if ( authorized ) {
             dispatch({ type:'user/toggleTimeType', payload:'2' });
@@ -51,9 +50,9 @@ function AlarmAnalysis({ dispatch, user, mach, alarm, board }){
                             <div className={style['card-title']}>电机异常排名</div>
                             <div className={style['card-content']}>
                                 {
-                                    chartSourceData['mach-alarm-rank'] 
+                                    Object.keys(alarmRank).length
                                     ?
-                                    <RankBarChart data={chartSourceData['mach-alarm-rank']} />
+                                    <RankBarChart data={alarmRank} />
                                     :
                                     <Spin className={style['spin']} />
                                 }
@@ -80,4 +79,4 @@ function AlarmAnalysis({ dispatch, user, mach, alarm, board }){
     )
 }
 
-export default connect(({ user, alarm, mach, board })=>({ user, alarm, mach, board }))(AlarmAnalysis);
+export default connect(({ user, alarm, mach })=>({ user, alarm, mach }))(AlarmAnalysis);

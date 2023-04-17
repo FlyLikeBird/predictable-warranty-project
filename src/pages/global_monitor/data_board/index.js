@@ -7,7 +7,7 @@ import BoardDrawer from './components/BoardDrawer';
 import style from '@/pages/IndexPage.css';
 
 function DataBoardManager({ dispatch, user, board }){
-    const { authorized } = user;
+    const { authorized, msg } = user;
     const { boardList, currentIndex, chartSourceData, statusSourceData,  fieldMaps, chartMaps } = board;
     const currentBoad = boardList.filter(i=>i.key === currentIndex)[0] || {};
     const [visible, setVisible] = useState(false);
@@ -20,7 +20,6 @@ function DataBoardManager({ dispatch, user, board }){
     const handleDispatch = useCallback((action)=>{
         dispatch(action);
     },[]);
-    console.log(board);
     return (
         <div style={{ height:'100%' }}>
             <div style={{ height:'40px', display:'flex', justifyContent:'space-between' }}>
@@ -38,8 +37,8 @@ function DataBoardManager({ dispatch, user, board }){
             <div style={{ height:'140px', overflow:'hidden' }}>
                 <DataCardList list={(currentBoad.dataCardList || []).filter(i=>i.a )} data={statusSourceData} fieldMaps={fieldMaps}  />
             </div>
-            <div style={{ height:'calc( 100% - 180px)', paddingTop:'1rem' }}>
-                <ChartCardList list={(currentBoad.chartCardList || []).filter(i=>i.a)} data={chartSourceData} chartMaps={chartMaps} onDispatch={handleDispatch} />
+            <div style={{ height:'calc( 100% - 180px)' }}>
+                <ChartCardList list={(currentBoad.chartCardList || []).filter(i=>i.a)} msg={msg} data={chartSourceData} chartMaps={chartMaps} onDispatch={handleDispatch} />
             </div>
             <Drawer
                 width='40%'

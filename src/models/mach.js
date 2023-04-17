@@ -135,15 +135,17 @@ export default {
         },
         *fetchMachRunningParams(action, { put, call, select }){
             let { user:{ companyId }} = yield select();
-            let { currentMach } = action.payload || {};
-            let { data } = yield call(getMachRunningParams, { companyId, equipmentCode:currentMach });
+            let { equipmentCode } = action.payload || {};
+            let { data } = yield call(getMachRunningParams, { companyId, equipmentCode });
         },
         *fetchMachRunningChart(action, { put, call, select }){
             let { user:{ companyId, startDate, endDate }} = yield select();
-            let { resolve, reject, equipmentCode, optionType } = action.payload || {};
-            let { data } = yield call(getMachRunningChart, { companyId, equipmentCode, optionType, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD')});
+            let { resolve, reject, currentDate, equipmentCode } = action.payload || {};
+            let dateStr = currentDate.format('YYYY-MM-DD');
+            let { data } = yield call(getMachRunningChart, { companyId, equipmentCode:'FF7849A0', beginDate:dateStr + ' 00:00:00', endDate: dateStr + ' 23:59:59' });
             if ( data && data.code === 200 ) {
                 resolve(data.data);
+            
             } else {
                 reject(data.message);
             }

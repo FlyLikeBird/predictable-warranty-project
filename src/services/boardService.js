@@ -48,3 +48,11 @@ export function getMachWarningRank(data = {}){
         }); 
 }
 
+export function getMachWarningTrend(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/warning/getEquipmentWarningTrend?' + str, { 
+        method:'GET',
+        }); 
+}

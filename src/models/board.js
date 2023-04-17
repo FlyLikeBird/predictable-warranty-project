@@ -2,8 +2,9 @@ import {
     getBoardList, updateBoardList,
     getMachStatus, getSumAlarm,
     getMachWarningRank, 
-    getTotalWarning,
+    getMachWarningTrend
 } from '../services/boardService';
+import { } from '../services/alarmService';
 import moment from 'moment';
 // let list = [
 //     { 
@@ -103,7 +104,8 @@ export default {
             yield put({ type:'fetchSumAlarm', payload:{ type:['j', 'k'], map:['0', '1'], startDate:moment(date).startOf('year'), endDate:moment(date).endOf('year') }});
             let { user:{ startDate, endDate }} = yield select();
             yield put({ type:'fetchWarningRank', payload:{ startDate, endDate }});
-            yield put({ type:'fetchTotalWarning', payload:{ startDate, endDate }});
+            yield put({ type:'fetchWarningTrend', payload:{ startDate, endDate, timeType:'2' }});
+            yield put({ type:'fetchSumWarning', payload:{ startDate, endDate, timeType:'2' }});
         },
         // 更新看板列表状态
         *updateBoardListAsync(action, { put, select, call }){
@@ -150,8 +152,22 @@ export default {
                 yield put({ type:'getChartDataResult', payload:{ data:data.data, type:'B' }});
             }
         },
-        
-
+        *fetchWarningTrend(action, { put, call, select }){
+            let { user:{ companyId }} = yield select();
+            let { startDate, endDate, timeType } = action.payload || {};
+            let { data } = yield call(getMachWarningTrend, { companyId, timeType, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD') });
+            if ( data && data.code === 200 ) {
+                yield put({ type:'getChartDataResult', payload:{ data:data.data, type:'C' }});
+            }
+        },
+        *fetchSumWarning(action, { put, call, select }){
+            let { user:{ companyId }} = yield select();
+            let { startDate, endDate, timeType } = action.payload || {};
+            let { data } = yield call(getMachWarningTrend, { companyId, timeType, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD') });
+            if ( data && data.code === 200 ) {
+                yield put({ type:'getChartDataResult', payload:{ data:data.data, type:'E' }});
+            }
+        }
     },
     reducers:{
         getBoardListResult(state, { payload:{ data }}){      

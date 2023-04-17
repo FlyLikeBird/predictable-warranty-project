@@ -1,7 +1,7 @@
 import {  
     getRuleList, addRule, updateRule, delRules,
     bindRule, unbindRule, getRuleMachs,
-    getAlarmList, getAlarmPercent, getAlarmTrend,
+    getAlarmList, getAlarmPercent, getAlarmTrend, getAlarmRank
 } from '../services/alarmService';
 import moment from 'moment';
 let date = new Date();
@@ -22,6 +22,7 @@ const initialState = {
     optional:{},
     alarmPercent:{},
     alarmTrend:{},
+    alarmRank:{},
     // 告警趋势状态
    
    
@@ -148,7 +149,7 @@ export default {
             let { user:{ startDate, endDate, timeType }} = yield select();
             yield put({ type:'fetchAlarmPercent'});
             yield put({ type:'fetchAlarmTrend' });
-            yield put({ type:'board/fetchWarningRank', payload:{ startDate, endDate }})
+            yield put({ type:'fetchAlarmRank'});
         },
         *fetchAlarmPercent(action, { select, call, put }){
             let { user:{ companyId, startDate, endDate }, alarm:{ optional }} = yield select();
@@ -177,20 +178,12 @@ export default {
                 yield put({ type:'getAlarmTrendResult', payload:{ data:data.data }});
             }
         },
-        *fetchChartInfo(action, { select, call, put, all}){
-            try {
-                let { forReport } = action.payload || {};
-                let { user:{ company_id, startDate, endDate }} = yield select();
-                let params = forReport ? { company_id, begin_date:startDate.format('YYYY-MM-DD'), end_date:endDate.format('YYYY-MM-DD') } : { company_id };
-                let [warningChart, regionChart] = yield all([
-                    call(getWarningChartInfo, params),
-                    call(getRegionChartInfo, params)
-                ]);
-                if ( warningChart && warningChart.data.code === '0' && regionChart && regionChart.data.code === '0') {
-                    yield put({type:'getChartInfo', payload:{ warningChartInfo:warningChart.data.data, regionChartInfo:regionChart.data.data }})
-                }
-            } catch(err){
-                console.log(err);
+        *fetchAlarmRank(action, { select, call, put }){
+            let { user:{ companyId, startDate, endDate, timeType }} = yield select();
+            let params = { companyId, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD') };
+            let { data } = yield call(getAlarmRank, params);
+            if ( data && data.code === 200 ){
+                yield put({ type:'getAlarmRankResult', payload:{ data:data.data }});
             }
         },
         // 告警详情页
@@ -365,6 +358,9 @@ export default {
         },
         getAlarmTrendResult(state, { payload:{ data }}){
             return { ...state, alarmTrend:data };
+        },
+        getAlarmRankResult(state, { payload :{ data }}){
+            return { ...state, alarmRank:data };
         },
         setOptional(state, { payload }){
             return { ...state, optional:payload };

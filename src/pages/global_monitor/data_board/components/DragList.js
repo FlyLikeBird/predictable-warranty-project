@@ -42,11 +42,5 @@ function DragList({ title, data, maps, onUpdateItems }){
     )
 }
 
-function areEqual(prevProps, nextProps){
-    if ( prevProps.data !== nextProps.data ){
-        return false;
-    } else {
-        return true;
-    }
-} 
-export default React.memo(DragList, areEqual);
+
+export default DragList;

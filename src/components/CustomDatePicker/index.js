@@ -9,7 +9,7 @@ import moment from 'moment';
 const { RangePicker } = DatePicker;
 
 
-function CustomDatePicker({ dispatch, onDispatch, size, user, optionStyle, mode, noToggle, noDay, noWeek, noMonth }){
+function CustomDatePicker({ dispatch, onDispatch, size, user, optionStyle, mode, noToggle, noDay, noWeek, noMonth, noYear }){
     const { theme, timeType ,startDate, endDate } = user;
     const inputRef = useRef();
     return (
@@ -48,9 +48,13 @@ function CustomDatePicker({ dispatch, onDispatch, size, user, optionStyle, mode,
                         :
                         <Radio.Button value='2'>月</Radio.Button>
                     }
-                   
-                    {/* <Radio.Button value='3'>月</Radio.Button> */}
-                    <Radio.Button value='1'>年</Radio.Button>
+                    {
+                        noYear 
+                        ?
+                        null
+                        :
+                        <Radio.Button value='1'>年</Radio.Button>
+                    }
                 </Radio.Group>
             }
             

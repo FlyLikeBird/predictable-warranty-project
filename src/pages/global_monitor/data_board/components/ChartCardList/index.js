@@ -16,7 +16,7 @@ const componentMaps = {
     'F':MultiCostChart
 }
 
-function ChartCardList({ onDispatch, list, data, chartMaps }){
+function ChartCardList({ onDispatch, list, data, msg, chartMaps }){
     return (
         <div style={{ height:'100%', overflow:'hidden auto' }}>
             {
@@ -25,7 +25,7 @@ function ChartCardList({ onDispatch, list, data, chartMaps }){
                     
                     return (
                         <div key={item.key} className={style['card-container-wrapper']} style={{ width:'50%', height:'50%' }}>
-                            <Com item={item} data={data[item.key]} chartMaps={chartMaps} onDispatch={onDispatch}  />
+                            <Com item={item} data={ item.key === 'D' ? msg : data[item.key]} chartMaps={chartMaps} onDispatch={onDispatch}  />
                         </div>
                     )
                 })  

@@ -5,16 +5,32 @@ import { FileExcelOutlined, FileImageOutlined } from '@ant-design/icons';
 import XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import { downloadExcel } from '@/utils/array';
+import CustomDatePicker from './CustomDatePicker';
 import style from '@/pages/IndexPage.css';
 
-let chartData = [];
-for ( var i=0;i<=23;i++){
-    chartData.push({ category:( i < 10 ? '0' + i : i ) +':00', value:100 + Math.random() * 100 });
-}
-
-function TotalAlarmChart({ item, data, chartMaps }){
+function TotalAlarmChart({ item, data, chartMaps, onDispatch }){
     const echartsRef = useRef();
     let seriesData = [];
+    let categoryData = [], valueData = [];
+    if ( data ){
+        categoryData = Object.keys(data).sort((a,b)=>{
+            let prevTime = new Date(a).getTime();
+            let nowTime = new Date(b).getTime();
+            return prevTime < nowTime ? -1 : 1;
+        });
+    }
+    // 获取所有告警类型
+    categoryData.forEach(key=>{
+        if ( data[key] && data[key].length ) {
+            let sum = data[key].reduce((total, cur)=>{
+                total += cur.totalNum;
+                return total;
+            },0);
+            valueData.push(sum);
+        } else {
+            valueData.push(0);
+        }
+    })
     seriesData.push({
         type:'line',
         symbol:'emptyCircle',
@@ -22,7 +38,7 @@ function TotalAlarmChart({ item, data, chartMaps }){
         name:'告警总数',
         showSymbol:false,
         smooth:true,
-        data:chartData.map(i=>i.value),
+        data:valueData,
         lineStyle:{
             color: {
                 type: 'linear',
@@ -66,6 +82,7 @@ function TotalAlarmChart({ item, data, chartMaps }){
             <div className={style['card-title']}>
                 <div>
                     <span>{ chartMaps[item.key] }</span>
+                    <CustomDatePicker onDispatch={action=>onDispatch({ type:'board/fetchSumWarning', payload:action })} />            
                 </div>
                 <Radio.Group size='small' onChange={e=>{
                     let value = e.target.value;
@@ -130,7 +147,7 @@ function TotalAlarmChart({ item, data, chartMaps }){
                         },
                         xAxis: {
                             type:'category',
-                            data:chartData.map(i=>i.category),
+                            data:categoryData,
                             silent: false,
                             splitLine: {
                                 show: false
@@ -150,6 +167,7 @@ function TotalAlarmChart({ item, data, chartMaps }){
                             splitArea: {
                                 show: false
                             },
+                            minInterval:1,
                             axisLine:{ show:false },
                             axisTick:{ show:false },
                             splitLine:{

@@ -8,22 +8,17 @@ import {
 import { md5, encryptBy, decryptBy } from '../utils/encryption';
 import moment from 'moment';
 
-const reg = /\/info_manage_menu\/manual_input\/([^\/]+)\/(\d+)/;
 const companyReg =  /\?pid\=0\.\d+&&userId=(\d+)&&companyId=(\d+)&&mode=(\w+)/;
 const agentReg = /\?agent=(.*)/;
 const agentReg2 = /iot-(.*)/;
 
 let date = new Date();
 // 初始化socket对象，并且添加监听事件
-function createWebSocket(url, data, companyId, fromAgent, dispatch){
+function createWebSocket(url, fromAgent, dispatch){
     let ws = new WebSocket(url);
     // console.log(data);
     ws.onopen = function(){
-        if ( data.agent_id && !fromAgent ){
-            ws.send(`agent:${data.agent_id}`);
-        } else {
-            ws.send(`com:${companyId}`);
-        }
+        console.log('连接socket成功');
     };
     // ws.onclose = function(){
     //     console.log('socket close...');
@@ -31,28 +26,26 @@ function createWebSocket(url, data, companyId, fromAgent, dispatch){
     // };
     ws.onerror = function(){
         console.log('socket error...');
-        reconnect(url, data, companyId, dispatch);
+        reconnect(url, fromAgent, dispatch);
     };
     ws.onmessage = (e)=>{
         if ( dispatch ) {   
-            let data = JSON.parse(e.data); 
-            // console.log(data);
-            if ( data.type === 'company'){
-                dispatch({ type:'setMsg', payload:{ data }});
-            } else if ( data.type === 'agent'){
-                dispatch({ type:'setAgentMsg', payload:{ data }})
-            }                       
+            if ( e.data && e.data.length > 10 ) {
+                let data = JSON.parse(e.data);
+                dispatch({ type:'user/setMsg', payload:{ data:data.data }})
+            }                                 
         }
     }
     return ws;
 }
-function reconnect(url, data, companyId, dispatch){
+let timer = null;
+function reconnect(url, fromAgent, dispatch){
     if(reconnect.lock) return;
     reconnect.lock = true;
-    setTimeout(()=>{
-        createWebSocket(url, data, companyId, dispatch);
+    timer = setTimeout(()=>{
+        createWebSocket(url, fromAgent, dispatch);
         reconnect.lock = false;
-    },2000)
+    },5000)
 }
 let socket = null;
 let menuData = [
@@ -122,7 +115,7 @@ const initialState = {
     authorized:false,
     isFrame:false,
     // socket实时告警消息
-    msg:{},
+    msg:[],
     agentMsg:{},
     weatherInfo:'',
     // 全局属性告警类型
@@ -206,9 +199,10 @@ export default {
                             window.alert('当前浏览器不支持websocket,推荐使用chrome浏览器');
                             return ;
                         }
-                        // let config = window.g;
-                        // let socketCompanyId = company_id ? company_id : data.data.companys.length ? data.data.companys[0].company_id : null ;
-                        // socket = createWebSocket(`ws://${config.socketHost}:${config.socketPort}`, data.data, socketCompanyId, matchResult ? true : false, dispatch);
+                        let config = window.g;
+                        if ( companyId ) {
+                            socket = createWebSocket(`ws://${config.socketHost}:${config.socketPort}/websocket/${companyId}`, matchResult ? true : false, dispatch);
+                        }
                     } else {
                         yield put({ type:'loginOut'});
                     }                 
@@ -262,6 +256,10 @@ export default {
             if ( socket && socket.close ){
                 socket.close();
                 socket = null;
+            }
+            if ( timer ) {
+                clearTimeout(timer);
+                timer = null;
             }
             yield put({type:'clearUserInfo'});
             yield put(routerRedux.push('/login'));
@@ -381,11 +379,7 @@ export default {
         },
         setMsg(state, { payload : { data } }){
             // 根据count 字段判断是否需要更新告警信息
-            if ( state.msg.count !== data.count ){
-                return { ...state, msg:data };
-            } else {
-                return state;
-            }
+            return { ...state, msg:data };
         },
         setAgentMsg(state, { payload:{ data }}){
             return { ...state, agentMsg:data.detail };

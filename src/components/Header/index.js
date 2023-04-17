@@ -76,23 +76,23 @@ const Header = ({ onDispatch, msg, routePath, userInfo, theme  })=> {
         //  2.刷新时监听整个文档的click事件，当有click时才触发audio的play();
         let audio = document.getElementById('my-audio');
         if ( audio ){
-            if ( msg.count ){
-                try {           
-                    if ( !muted ){
-                        audio.currentTime = 0;
-                        audio.play(); 
-                        closeTimer = setTimeout(()=>{
-                            audio.pause();
-                        },5000)                              
-                    } else {
-                        audio.pause();
-                    }
-                } catch(err){
-                    console.log(err);
-                }
-            } else {
-                if ( audio && audio.pause ) audio.pause();
-            }
+            // if ( msg.count ){
+            //     try {           
+            //         if ( !muted ){
+            //             audio.currentTime = 0;
+            //             audio.play(); 
+            //             closeTimer = setTimeout(()=>{
+            //                 audio.pause();
+            //             },5000)                              
+            //         } else {
+            //             audio.pause();
+            //         }
+            //     } catch(err){
+            //         console.log(err);
+            //     }
+            // } else {
+            //     if ( audio && audio.pause ) audio.pause();
+            // }
         }
     },[msg, muted]);
     // console.log(currentCompany);
@@ -139,7 +139,7 @@ const Header = ({ onDispatch, msg, routePath, userInfo, theme  })=> {
                         
                             <AlertOutlined style={{ marginRight:'6px', fontSize:'1.2rem' }} />
                             {/* <Popover content={<ScrollTable data={ msg.detail || []}/>}> */}
-                            <Badge count={msg.count} onClick={()=>onDispatch(routerRedux.push('/energy/alarm_manage/alarm_execute'))} />
+                            <Badge count={msg.length} onClick={()=>onDispatch(routerRedux.push('/alarm_manage/alarm_manage_list'))} />
                             {/* </Popover> */}
                             <IconFont style={{ fontSize:'1.2rem', margin:'0 10px'}} type={ muted ? 'iconsound-off' : 'iconsound'} onClick={()=>{
                                 setMuted(!muted);
@@ -147,8 +147,8 @@ const Header = ({ onDispatch, msg, routePath, userInfo, theme  })=> {
                             <span style={{ margin:'0 10px' }}>|</span>
                         
                             <span style={{ width:'24px', height:'24px', borderRadius:'50%', backgroundColor:'#8888ac', backgroundRepeat:'no-repeat', backgroundSize:'cover', backgroundImage:`url(${avatarBg})`}}></span>
-                            <span>{userInfo.user_name }</span>
-                            <Tag color="blue">{ userInfo.role_name }</Tag>
+                            <span>{ userInfo.userName }</span>
+                            {/* <Tag color="blue">{ userInfo.role_name }</Tag> */}
                             <span style={{ cursor:'pointer' }}>                  
                                 <Tag color='#2db7f5' onClick={()=>{
                                     onDispatch({ type:'user/loginOut'});
