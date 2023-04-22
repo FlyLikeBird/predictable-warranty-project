@@ -33,7 +33,7 @@ function AlarmAnalysis({ dispatch, user, mach, alarm }){
                 <div style={{ height:'50%' }}>
                     <div className={style['card-container-wrapper']} style={{ width:'50%' }}>
                         <div className={style['card-container']} style={{ boxShadow:'none' }}>
-                            <div className={style['card-title']}>告警占比</div>
+                            <div className={style['card-title']}>总告警占比</div>
                             <div className={style['card-content']}>
                                 {
                                     Object.keys(alarmPercent).length 
@@ -47,7 +47,7 @@ function AlarmAnalysis({ dispatch, user, mach, alarm }){
                     </div>
                     <div className={style['card-container-wrapper']} style={{ width:'50%', paddingRight:'0' }}>
                         <div className={style['card-container']} style={{ boxShadow:'none' }}>
-                            <div className={style['card-title']}>电机异常排名</div>
+                            <div className={style['card-title']}>设备异常排名</div>
                             <div className={style['card-content']}>
                                 {
                                     Object.keys(alarmRank).length
@@ -62,7 +62,7 @@ function AlarmAnalysis({ dispatch, user, mach, alarm }){
                 </div>
                 <div style={{ height:'50%' }}>
                     <div className={style['card-container']} style={{ boxShadow:'none' }}>
-                        <div className={style['card-title']}>告警趋势</div>
+                        <div className={style['card-title']}>总告警趋势</div>
                         <div className={style['card-content']}>
                             {
                                 Object.keys(alarmTrend).length 

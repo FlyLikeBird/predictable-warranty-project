@@ -3,20 +3,24 @@ import { connect } from 'dva';
 import { Button, Table, Modal, Popconfirm, message } from 'antd';
 import { PlusOutlined, DownloadOutlined } from '@ant-design/icons';
 import AddForm from './AddForm';
+import TableSelector from './TableSelector';
 import style from '@/pages/IndexPage.css';
 
-const typeMaps = { 0:'电表', 1:'震动', 2:'温度'}
 function SensorManager({ dispatch, user, mach }){
     const { authorized } = user;
-    const { sensorList, currentPage, total } = mach;
+    const { sensorList, currentPage, total, sensorTypes, sensorModelMaps } = mach;
     const [info, setInfo] = useState({});
     const columns = [
         { title:'序号', render:(text, record, index)=>{ return (currentPage - 1) * 12 + index + 1 }},
         { title:'编码', dataIndex:'sensorCode' },
         { title:'名称', dataIndex:'sensorName'},
         { title:'型号', dataIndex:'sensorModel'},
-        { title:'类型', dataIndex:'sensorType', render:value=>(<span>{ typeMaps[value] }</span>) },
+        { title:'类型', dataIndex:'sensorType', render:value=>{
+            let info = sensorTypes.filter(i=>i.key === value )[0] || {};
+            return (<span>{ info.title || '--' }</span>)
+        }},
         { title:'采用标准', dataIndex:'sensorCriteria'},
+        { title:'添加时间', dataIndex:'createTime' },
         {
             title:'操作',
             render:row=>(
@@ -39,16 +43,20 @@ function SensorManager({ dispatch, user, mach }){
     useEffect(()=>{
         if ( authorized ){
             dispatch({ type:'mach/fetchSensorList' });
+            dispatch({ type:'mach/fetchSensorModels'});
         }
     },[authorized])
     
     return (
         <>
             
-            {/* <div style={{ height:'90px' }}>
-                <TableSelector onSearch={handleSearch} />
-            </div>   */}
-            <div style={{ height:'100%' }}>
+            <div style={{ height:'90px' }}>
+                <TableSelector onSearch={obj=>{
+                    dispatch({ type:'mach/setOptional', payload:obj });
+                    dispatch({ type:'mach/fetchSensorList'});
+                }} />
+            </div>  
+            <div style={{ height:'calc( 100% - 90px)', paddingTop:'1rem' }}>
                 <div className={style['card-container']} style={{ padding:'1rem 0', boxShadow:'none' }}>
                     <div className={style['card-title']}>
                         <div>
@@ -62,7 +70,7 @@ function SensorManager({ dispatch, user, mach }){
                             className={style['self-table-container']}
                             columns={columns}
                             dataSource={sensorList}
-                            rowKey=''
+                            rowKey='sensorCode'
                             pagination={{ current:currentPage, total, pageSize:12, showSizeChanger:false }}
                             onChange={pagination=>{
                                 dispatch({type:'mach/fetchSensorList', payload:{ currentPage:pagination.current }});
@@ -80,6 +88,8 @@ function SensorManager({ dispatch, user, mach }){
                     <AddForm 
                         info={info}
                         onDispatch={action=>dispatch(action)}
+                        sensorTypes={sensorTypes}
+                        sensorModelMaps={sensorModelMaps}
                         onClose={()=>setInfo({})}
                     />
                 </Modal>

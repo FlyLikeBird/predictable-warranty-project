@@ -12,12 +12,12 @@ import style from '@/pages/IndexPage.css';
 
 function MachArchiveManager({ dispatch, user, mach, userList }){
     const { authorized } = user;
-    const { list, currentPage, bindSensors, unbindSensors, tplList, total, sensorList } = mach;
+    const { list, currentPage, bindSensors, unbindSensors, sensorTypes, tplList, total  } = mach;
     const [info, setInfo] = useState({});
     const columns = [
         { title:'序号', render:(text, record, index)=>{ return (currentPage - 1) * 12 + index + 1 }},
         { title:'设备名称', dataIndex:'equipmentName' },
-        { title:'设备类型', dataIndex:'equipmentType'},
+        { title:'设备类型', dataIndex:'equipmentType', render:value=>(<span>{ value === 1 ? '电机' : '其他' }</span>)},
         { title:'品牌', dataIndex:'equipmentBrand'},
         { title:'型号', dataIndex:'equipmentModel'},
         { title:'功率', dataIndex:'equipmentPower' },
@@ -33,19 +33,19 @@ function MachArchiveManager({ dispatch, user, mach, userList }){
             title:'操作',
             render:row=>(
                 <div>
-                    <a onClick={()=>{
+                    <a style={{ marginRight:'1rem' }} onClick={()=>{
                         dispatch({ type:'mach/fetchBindSensors', payload:{ equipmentCode:row.equipmentCode }});
                         setInfo({ visible:true, current:row, forEdit:true });
                     }}>更新</a>
-                    {/* <Popconfirm title='确定删除此设备吗' okText='确定' cancelText='取消' onConfirm={()=>{
+                    <Popconfirm title='确定删除此设备吗' okText='确定' cancelText='取消' onConfirm={()=>{
                         new Promise((resolve, reject)=>{
-                            dispatch({ type:'mach/addSensorAsync', payload:{ values:row, resolve, reject, forEdit:true, forDel:true }})
+                            dispatch({ type:'mach/delMachAsync', payload:{  resolve, reject, equipmentCode:row.equipmentCode }})
                         })
                         .then(()=>{
-                            message.success(`删除${row.sensorName}成功`)
+                            message.success(`删除${row.equipmentName}成功`)
                         })
                         .catch(msg=>message.error(msg));
-                    }}><a>删除</a></Popconfirm> */}
+                    }}><a>删除</a></Popconfirm>
                 </div>
             )
         }
@@ -104,7 +104,7 @@ function MachArchiveManager({ dispatch, user, mach, userList }){
                             dataSource={list}
                             pagination={{ current:currentPage, total, pageSize:12, showSizeChanger:false }}
                             onChange={pagination=>{
-                                dispatch({type:'mach/setCurrentPage', payload:pagination.current });
+                                dispatch({type:'mach/fetchMachList', payload:{ currentPage:pagination.current }});
                             }}
                                 
                         />
@@ -122,10 +122,10 @@ function MachArchiveManager({ dispatch, user, mach, userList }){
                         info={info}
                         onDispatch={action=>dispatch(action)}
                         userList={userList.list}
-                        sensorList={sensorList}
                         onClose={()=>setInfo({})} 
                         bindSensors={bindSensors}
                         unbindSensors={unbindSensors}
+                        sensorTypes={sensorTypes}
                         tplList={tplList}
                     />
                 </Drawer>

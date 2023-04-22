@@ -1,14 +1,15 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import html2canvas from 'html2canvas';
 import { Radio } from 'antd';
 import XLSX from 'xlsx';
-import { FileExcelOutlined, FileImageOutlined } from '@ant-design/icons';
+import { FileExcelOutlined, FileImageOutlined, BarChartOutlined, LineChartOutlined } from '@ant-design/icons';
 import { downloadExcel } from '@/utils/array';
 import CustomDatePicker from './CustomDatePicker';
 import style from '@/pages/IndexPage.css';
 
 function MachAlarmTrend({ item, data, chartMaps, onDispatch }){
+    let [chartType, setChartType] = useState('bar');
     let echartsRef = useRef();
     let seriesData = [];
     let categoryData = [];
@@ -20,7 +21,7 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }){
             return prevTime < nowTime ? -1 : 1;
         });
     }
-    
+
     // 获取所有告警类型
     categoryData.forEach(key=>{
         if ( data[key] && data[key].length ) {
@@ -47,18 +48,26 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }){
         }
     })
     seriesData.push({
-        type:'bar',
+        type:chartType,
         barWidth:10,
         name:'预警',
+        symbol:'emptyCircle',
+        symbolSize:6,
+        showSymbol:false,
+        smooth:true,
         data:preAlarmData,
         itemStyle:{
             color:'#ff7d00'
         }
     })
     seriesData.push({
-        type:'bar',
+        type:chartType,
         barWidth:10,
         name:'告警',
+        symbol:'emptyCircle',
+        symbolSize:6,
+        showSymbol:false,
+        smooth:true,
         data:alarmData,
         itemStyle:{
             color:'#f53f3f'
@@ -67,14 +76,17 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }){
     
     return (
         <div className={style['card-container']} style={{ boxShadow:'none', padding:'0' }}>
-            <div className={style['card-title']}>
-                <div>
-                    <span>{ chartMaps[item.key] }</span>
+            <div className={style['card-title']} style={{ height:'2.6rem', lineHeight:'2.6rem' }}>
+                <div style={{ display:'flex' }}>
+                    <span style={{ marginRight:'1rem' }}>{ chartMaps[item.key] }</span>
                     <CustomDatePicker onDispatch={action=>onDispatch({ type:'board/fetchWarningTrend', payload:action })} />            
                 </div>
                 <Radio.Group size='small' onChange={e=>{
                     let value = e.target.value;
                     let fileTitle = chartMaps[item.key];
+                    if ( value === 'bar' || value === 'line'){
+                        setChartType(value);
+                    }
                     if ( value === 'download' && echartsRef.current ){
                         html2canvas(echartsRef.current.ele, { allowTaint:false, useCORS:false, backgroundColor:'#fff' })
                         .then(canvas=>{
@@ -108,11 +120,13 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }){
                         downloadExcel(sheet, fileTitle + '.xlsx' );
                     }
                 }}>
+                    <Radio.Button value='bar'><BarChartOutlined /></Radio.Button>
+                    <Radio.Button value='line'><LineChartOutlined /></Radio.Button>   
                     <Radio.Button value='excel'><FileExcelOutlined /></Radio.Button>
                     <Radio.Button value='download'><FileImageOutlined /></Radio.Button>
                 </Radio.Group>
             </div>
-            <div className={style['card-content']}>
+            <div className={style['card-content']} style={{ height:'calc( 100% - 2.6rem)' }}>
                 <ReactEcharts 
                     ref={echartsRef}
                     style={{ height:'100%' }}
@@ -166,6 +180,7 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }){
                         yAxis: {
                             type:'value',
                             minInterval:1,
+                            name:'(次)',
                             splitArea: {
                                 show: false
                             },

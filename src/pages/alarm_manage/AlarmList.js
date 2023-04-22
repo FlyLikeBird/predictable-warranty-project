@@ -86,11 +86,10 @@ function AlarmList({ dispatch, user, alarm, mach }){
                             locale={{emptyText:(<div style={{ margin:'1rem 0' }}>还没有告警记录</div>)}}
                             bordered={true}
                             rowKey="equipmentWarningId"
-                            pagination={false}
-                            // onChange={pagination=>{
-                            //     dispatch({ type:'alarm/setPageNum', payload:pagination.current });
-                            //     dispatch({ type:'alarm/fetchRecordList', payload:{ cate_code:activeKey, keywords:value }} )
-                            // }}
+                            pagination={{ current:currentPage, total, pageSize:12, showSizeChanger:false }}
+                            onChange={pagination=>{
+                                dispatch({type:'alarm/fetchAlarmList', payload:{ currentPage:pagination.current }});
+                            }}
                         />
                         <Modal         
                             title={info.forEdit ? '更新规则' : '添加规则'}          

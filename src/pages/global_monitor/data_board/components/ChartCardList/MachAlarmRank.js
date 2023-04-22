@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import html2canvas from 'html2canvas';
 import { Radio } from 'antd';
@@ -6,13 +6,14 @@ import XLSX from 'xlsx';
 import { FileExcelOutlined, FileImageOutlined } from '@ant-design/icons';
 import { downloadExcel } from '@/utils/array';
 import CustomDatePicker from './CustomDatePicker';
+import moment from 'moment';
 import style from '@/pages/IndexPage.css';
-
 function MachAlarmRank({ item, data, onDispatch, chartMaps }){
     let echartsRef = useRef();
     let seriesData = [];
     let categoryData = [], preAlarmData = [], alarmData = [];
     data = data || {};
+   
     // 按预警和告警值的累加值倒序排列
     Object.keys(data).sort((a,b)=>{
         let value1 = ( data[a]['0'] || 0 ) + ( data[a]['1'] || 0 );
@@ -23,7 +24,7 @@ function MachAlarmRank({ item, data, onDispatch, chartMaps }){
         preAlarmData.push(data[key]['0'] || 0);
         alarmData.push(data[key]['1'] || 0);
     })
- 
+    
     seriesData.push({
         type:'bar',
         barWidth:6,
@@ -44,11 +45,10 @@ function MachAlarmRank({ item, data, onDispatch, chartMaps }){
     })
     return (
         <div className={style['card-container']} style={{ boxShadow:'none', padding:'0' }}>
-            <div className={style['card-title']}>
-                
-                <div>
-                    <span>{ chartMaps[item.key] }</span>    
-                    <CustomDatePicker onDispatch={action=>onDispatch({ type:'board/fetchWarningRank', payload:action })} />            
+            <div className={style['card-title']} style={{ height:'2.6rem', lineHeight:'2.6rem' }}>       
+                <div style={{ display:'flex' }}>
+                    <span style={{ marginRight:'1rem' }}>{ chartMaps[item.key] }</span>    
+                    <CustomDatePicker noDay onDispatch={action=>onDispatch({ type:'board/fetchWarningRank', payload:action })} />            
                 </div>
                 <Radio.Group size='small' onChange={e=>{
                     let value = e.target.value;
@@ -89,7 +89,7 @@ function MachAlarmRank({ item, data, onDispatch, chartMaps }){
                     <Radio.Button value='download'><FileImageOutlined /></Radio.Button>
                 </Radio.Group>
             </div>
-            <div className={style['card-content']}>
+            <div className={style['card-content']} style={{ height:'calc( 100% - 2.6rem)' }}>
                 <ReactEcharts 
                     ref={echartsRef}
                     style={{ height:'100%' }}
@@ -124,6 +124,7 @@ function MachAlarmRank({ item, data, onDispatch, chartMaps }){
                             type:'value',
                             position:'top',
                             silent: false,
+                            name:'(次)',
                             minInterval:1,
                             splitLine: {
                                 show: false

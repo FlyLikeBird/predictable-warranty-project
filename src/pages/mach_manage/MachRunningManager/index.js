@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'dva';
 import { Pagination } from 'antd';
+import { FileImageFilled } from '@ant-design/icons';
 import TableSelector from '../MachArchiveManager/components/TableSelector';
 import MachImg from '../../../../public/mach.png';
 import MachDetail from './MachDetailManager';
@@ -29,14 +30,25 @@ function MachRunningManager({ dispatch, user, mach }){
                     {
                         list.map((item, index)=>{
                             let runningInfo = statusList.filter(i=>i.equipmentCode === item.equipmentCode )[0] || {};
+                            let config = window.g;
+                            let imgPath = item.equipmentPhotoPath ? `http://${config.apiHost}/upload/getFileByPath?filePath=${item.equipmentPhotoPath}` : '';
                             return (
                             <div key={item.equipmentCode} onClick={()=>setCurrentMach({ ...item, ...runningInfo })} style={{ width:'25%', height:'50%', display:'inline-block', padding:'0 1rem 1rem 0' }}>
                                 <>
                                     {/* 产品区 */}
-                                    <div style={{ height:'54%', position:'relative', background:'#fafafa', textAlign:'center', overflow:'hidden' }}>
-                                        <img src={MachImg} style={{ height:'90%' }} />
+                                    <div style={{ height:'54%', position:'relative', background:'#fafafa', display:'flex', justifyContent:'center', alignItems:'center', overflow:'hidden' }}>
+                                        {
+                                            imgPath
+                                            ?
+                                            <img src={imgPath} style={{ height:'80%' }} />
+                                            :
+                                            <div style={{ textAlign:'center' }}>
+                                                <FileImageFilled style={{ color:'#c9c9c9', fontSize:'4rem', margin:'0.5rem 0' }} />
+                                                <div>还没有配置设备图</div>
+                                            </div>
+                                        }
                                         {/* 运行状态标签 */}
-                                        <div style={{ width:'100px', left:'-10px', top:'1rem', color:'#fff', borderRadius:'20px', position:'absolute', padding:'4px', background:'#4cd263' }}>
+                                        <div style={{ width:'100px', left:'-10px', top:'1rem', color:'#fff', borderRadius:'20px', position:'absolute', padding:'4px 1.2rem', background:'#4cd263' }}>
                                             <span style={{ display:'inline-block', width:'6px', height:'6px', borderRadius:'50%', background:'#fff', verticalAlign:'middle', marginRight:'4px' }}></span>
                                             <span style={{ verticalAlign:'middle' }}>运行中</span>
                                         </div>

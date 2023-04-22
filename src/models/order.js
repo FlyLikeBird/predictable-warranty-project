@@ -1,6 +1,7 @@
 import { 
     getOrderList, getOrderDetail,
-    addOrder, updateOrder, delOrder
+    addOrder, updateOrder, delOrder,
+    getMaintainList, getMaintainDetail
 } from '../services/orderService';
 
 const initialState = {
@@ -8,11 +9,9 @@ const initialState = {
     currentPage:1,
     isLoading:false,
     total:0,
-    sensorList:[],
-    // 获取可绑定的传感器列表
-    unbindSensors:[],
-    // 获取当前设备已绑定的传感器
-    bindSensors:[]
+    optional:{},
+    maintainList:[],
+    maintainDetail:{}
 };
 
 export default {
@@ -55,30 +54,25 @@ export default {
             //     if ( reject ) reject(data.message);
             // }
         },
-        // 传感器
-        *fetchSensorList(action, { put, call, select }){
-            let { user:{ companyId }} = yield select();
+        *fetchMaintainList(action, { put, call, select }){
+            let { user:{ companyId }, order:{ optional }} = yield select();
             let { currentPage } = action.payload || {};
             currentPage = currentPage || 1;
-            let { data } = yield call(getSensorList, { companyId, page:currentPage, pageSize:12 });
+            let params = { companyId, page:currentPage, pageSize:12 };
+            Object.keys(optional).forEach(key=>{
+                if(optional[key]){
+                    params[key] = optional[key];
+                }
+            })
+            yield put({ type:'toggleLoading'});
+            let { data } = yield call(getMaintainList, params);
             if ( data && data.code === 200 ){
-                yield put({ type:'getSensorResult', payload:{ data:data.data, currentPage }});
+                yield put({ type:'getMaintainListResult', payload:{ data:data.data, currentPage, total:data.total }});
             }
         },
-        *addSensorAsync(action, { put, call, select, all }){
-            let { user:{ companyId }} = yield select();
-            let { values, resolve, reject, forEdit, forDel } = action.payload || {};
-            values.companyId = companyId;
-            if ( forDel ) {
-                values.deleteStatus = 1;
-            }
-            let { data } = yield call(forEdit ? updateSensor : addSensor, { ...values } );
-            if ( data && data.code === 200 ){
-                yield put({ type:'fetchSensorList'});
-                if ( resolve ) resolve();
-            } else {
-                if ( reject ) reject(data.message);
-            }
+        *fetchMaintainDetail(action, { put, call, select }){
+            let { equipmentCode } = action.payload || {};
+            let { data } = yield call(getMaintainDetail, { equipmentCode });
         }
     },
     reducers:{
@@ -88,17 +82,11 @@ export default {
         getOrderListResult(state, { payload:{ data, currentPage, total }}){
             return { ...state, orderList:data, currentPage, total };
         },
-        getBindSensorsResult(state, { payload:{ data }}){
-            return { ...state, bindSensors:data };
+        getMaintainListResult(state, { payload:{ data, currentPage, total }}){
+            return { ...state, maintainList:data, currentPage, total, isLoading:false };
         },
-        getUnbindSensorsResult(state, { payload:{ data }}){
-            return { ...state, unbindSensors:data };
-        },
-        getSensorResult(state, { payload:{ data, currentPage, total }}){
-            return { ...state, sensorList:data, currentPage, total };
-        },
-        getTplListResult(state, { payload:{ data }}){
-            return { ...state, tplList:data };
+        setOptional(state, { payload }){
+            return { ...state, optional:payload };
         },
         reset(){
             return initialState;

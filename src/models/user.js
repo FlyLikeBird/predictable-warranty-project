@@ -95,9 +95,10 @@ let menuData = [
         menu_id:16,
         child:[
             { menu_code:'sys_manage_user', menu_name:'用户管理', menu_id:17 },
-            { menu_code:'sys_manage_role', menu_name:'角色权限', menu_id:18 },
+            // { menu_code:'sys_manage_role', menu_name:'角色权限', menu_id:18 },
             { menu_code:'sys_manage_log', menu_name:'系统日志', menu_id:19 },
-            { menu_code:'sys_manage_pwd', menu_name:'修改密码', menu_id:20 }
+            { menu_code:'sys_manage_pwd', menu_name:'修改密码', menu_id:20 },
+            { menu_code:'sys_manage_fee', menu_name:'费率设置', menu_id:30 }
         ]
     }
 ]
@@ -186,6 +187,7 @@ export default {
                                 userName:localStorage.getItem('userName'),
                                 phone:localStorage.getItem('phone'),
                                 companyId,
+                                companyName:localStorage.getItem('companyName'),
                                 menuList:JSON.parse(localStorage.getItem('menuList'))
                             }, 
                             fromAgent:matchResult ? true : false, 
@@ -203,6 +205,7 @@ export default {
                         if ( companyId ) {
                             socket = createWebSocket(`ws://${config.socketHost}:${config.socketPort}/websocket/${companyId}`, matchResult ? true : false, dispatch);
                         }
+                       
                     } else {
                         yield put({ type:'loginOut'});
                     }                 
@@ -226,9 +229,10 @@ export default {
                 // password = md5(password, user_name);
                 var { data }  = yield call(login, { userName, password });
                 if ( data && data.code === 200 ){   
-                    let {  companyId, userName, userId, phone, menuList, token } = data.data;
+                    let {  companyId, companyName, userName, userId, phone, menuList, token } = data.data;
                     //  保存登录的时间戳,用户id,公司id 
                     localStorage.setItem('companyId', companyId);
+                    localStorage.setItem('companyName', companyName);
                     localStorage.setItem('userId', userId);
                     localStorage.setItem('userName', userName);
                     localStorage.setItem('phone', phone);
@@ -287,37 +291,6 @@ export default {
                     if ( reject && typeof reject === 'function') reject(data.msg);
                 }
             } catch(err){   
-                console.log(err);
-            }
-        },
-        *fetchSession(action, { put, call, select }){
-            let { sid } = action.payload || {};
-            let { data } = yield call(fetchSessionUser, { sid });
-            if ( data && data.code === '0'){
-                let { user:{ newThirdAgent }} = yield select();
-                let { user_id, user_name, agent_id, companys } = data.data;
-                let companysMap = companys.map((item)=>{
-                    return { [encodeURI(item.company_name)]:item.company_id };
-                })
-                let timestamp = parseInt(new Date().getTime()/1000);
-                //  保存登录的时间戳,用户id,公司id 
-                localStorage.setItem('timestamp', timestamp);
-                localStorage.setItem('user_id', user_id);
-                localStorage.setItem('user_name', user_name);
-                localStorage.setItem('companysMap', JSON.stringify(companysMap));
-                localStorage.setItem('agent_id', agent_id);
-                yield put({ type:'setUserInfo', payload:{ data:data.data, company_id:null, fromAgent:null, authorized:false }});
-                yield put(routerRedux.push('/'));
-
-            }
-        },
-        *fetchAlarmTypes(action, { put, call, select }){
-            try {
-                let { data } = yield call(getAlarmTypes);
-                if ( data && data.code === '0'){
-                    yield put({ type:'getAlarmTypesResult', payload:{ data:data.data }});
-                }
-            } catch(err){
                 console.log(err);
             }
         }

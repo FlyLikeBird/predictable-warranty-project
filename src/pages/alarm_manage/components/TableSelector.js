@@ -24,7 +24,7 @@ function TableSelector({ machList, onSearch }){
                             </Select>
                         </div>
                         <div style={{ display:'inline-flex', alignItems:'center', flex:'1', marginRight:'1rem'  }}>
-                            <span>告警类型</span>
+                            <span>处理状态</span>
                             <Select style={{ flex:'1', marginLeft:'0.5rem' }}>
                                 <Option value={1}>电机</Option>
                             </Select>

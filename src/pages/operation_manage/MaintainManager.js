@@ -1,5 +1,6 @@
-import React from 'react';
-import { Table } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'dva';
+import { Table, message } from 'antd';
 import { WalletFilled, ToolFilled, HistoryOutlined, CheckCircleFilled } from '@ant-design/icons';
 import TableSelector from './components/TableSelector';
 import style from '@/pages/IndexPage.css';
@@ -11,33 +12,46 @@ const infoList = [
     { key:'4', title:'维保准时率', value:92, unit:'%' }
 ]
 
-function MaintainManager(){
+function MaintainManager({ dispatch, user, order }){
+    const { authorized } = user;
+    const { maintainList, maintainDetail } = order;
+    useEffect(()=>{
+        if ( authorized ){
+            dispatch({ type:'order/fetchMaintainList'});
+        }
+    },[authorized])
     const columns = [
-        { title:'设备名称' },
-        { title:'功率' },
-        { title:'型号'},
-        { title:'保修截止日期'},
-        { title:'建议下次保养时间' },
-        { title:'负责人'},
-        { title:'实际保养时间'},
-        { title:'上次保养成本'},
-        { title:'上次保养用时'},
-        { title:'保养状态'},
+        { title:'设备名称', dataIndex:'equipmentName' },
+        { title:'功率', dataIndex:'equipmentPower', render:value=>(<span>{ ( value || '--' ) + 'kw' }</span>)  },
+        { title:'型号', dataIndex:'equipmentModel' },
+        { title:'保修截止日期', dataIndex:'equipmentMaintenanceEndDate' },
+        { title:'建议下次保养时间', dataIndex:'suggestionUpkeepDate' },
+        { title:'负责人', dataIndex:'equipmentHeadName' },
+        { title:'实际保养时间', dataIndex:'actualUpkeepDate', render:value=>(<span>{ value || '--' }</span>)},
+        { title:'上次保养成本', dataIndex:'lastUpkeepCost', render:value=>(<span>{ value || '--' }</span>)},
+        { title:'上次保养用时', dataIndex:'lastUpkeepTakeTime', render:value=>(<span>{ value || '--' }</span>)},
+        { title:'保养状态', dataIndex:'upkeepStatus',  render:value=>(<span style={{ color:value ? 'rgb(0, 180, 42)' : 'rgb(245, 63, 63)'}}>{ value ? '已保养' : '未保养' }</span>) },
         {
             title:'操作',
             render:(row)=>{
                 return (
                     <>
-                        <span>详情</span>
+                        <span onClick={()=>{
+                            message.info('工单开发中...');
+                        }}>详情</span>
                     </>
                 )
             }
         }
     ]
+    
     return (
         <>
             <div style={{ height:'90px' }}>
-                <TableSelector />
+                <TableSelector list={maintainList} onSearch={obj=>{
+                    dispatch({ type:'order/setOptional', payload:obj });
+                    dispatch({ type:'order/fetchMaintainList'});
+                }} />
             </div>
             <div style={{ height:'calc( 100% - 90px)', paddingTop:'1rem' }}>
                 <div className={style['card-container']} style={{ boxShadow:'none', padding:'1rem' }}>
@@ -73,9 +87,10 @@ function MaintainManager(){
                     </div>
                     <Table
                         columns={columns}
+                        rowKey='equipmentCode'
                         style={{ padding:'0' }}
                         className={style['self-table-container']}
-                        dataSource={[]}
+                        dataSource={maintainList}
                     />
                 </div>
             </div>
@@ -83,5 +98,5 @@ function MaintainManager(){
     )
 }
 
-export default MaintainManager;
+export default connect(({ user, order })=>({ user, order }))(MaintainManager);
 

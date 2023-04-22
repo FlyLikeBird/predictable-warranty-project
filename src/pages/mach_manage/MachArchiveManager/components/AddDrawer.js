@@ -12,7 +12,7 @@ const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
 };
-function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClose, onDispatch }){
+function AddDrawer({ userList, info, unbindSensors, bindSensors, sensorTypes, tplList, onClose, onDispatch }){
     const [fileList, setFileList] = useState([]);
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
@@ -20,13 +20,29 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
         unbindSensors.concat(bindSensors)
         :
         unbindSensors;
-    const handleChange = ( { fileList })=>{
-    
-        setFileList(fileList);
-    };
+    // 根据传感器类型分类管理
+    let sensorMaps = finalSensors.reduce((sum, cur)=>{
+        if ( !sum[cur.sensorType] ) {
+            sum[cur.sensorType] = [cur];
+        } else {
+            sum[cur.sensorType].push(cur);
+        }
+        return sum;
+    },{})
+    const handleChange = ({ fileList })=>setFileList(fileList);
     useEffect(()=>{
         // 设置已绑定的传感器
-        form2.setFieldValue('sensorList', bindSensors.map(i=>i.sensorCode ) );
+        let bindSensorMaps = bindSensors.reduce((sum, cur)=>{
+            if ( !sum[cur.sensorType] ) {
+                sum[cur.sensorType] = [cur.sensorCode];
+            } else {
+                sum[cur.sensorType].push(cur.sensorCode);
+            }
+            return sum;
+        }, {})
+        Object.keys(bindSensorMaps).forEach(key=>{
+            form2.setFieldValue('sensor' + key, bindSensorMaps[key])
+        })
     },[bindSensors])
     const handlePreview = (file)=>{
         // file.thumbUrl 默认编译成200*200像素的64位字符串, 用FileReader重新解析
@@ -56,9 +72,9 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
         if (!(isJPG || isJPEG || isGIF || isPNG)) {
             message.error('只能上传JPG 、JPEG 、GIF、 PNG格式的图片')
         }
-        const isLt2M = file.size / 1024 / 1024 < 5;
+        const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            message.error('产品图不能超过5M');
+            message.error('产品图不能超过2M');
         }
         return false;
     };
@@ -68,35 +84,34 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
           <div className="ant-upload-text">上传产品图</div>
         </div>
     );    
-    const fieldData = {
-        equipmentCode:'003',
-        equipmentType:'1',
-        equipmentName:'mach003',
-        equipmentModel:'T800',
-        equipmentBrand:'三菱',
-        equipmentPower:500,
-        equipmentRpm:1000,
-        equipmentElectricity:500,
-        equipmentVoltage:100,
-        equipmentPedestal:'0',
-        equipmentPivoting:1000,
-        equipmentProductionDate:moment(new Date('2022-10-1')),
-        equipmentMaintenanceEndDate:moment(new Date('2024-10-1')),
-        equipmentPrice:10000,
-        equipmentUpkeepWorkCycle:2000,
-        equipmentUpkeepCycle:3000,
-        equipmentWarrantyPeriod:24,
-    }
+    
     useEffect(()=>{
         if ( info.forEdit ) {
+            let { equipmentPhotoPath } = info.current;
             form1.setFieldsValue({ ...info.current, equipmentProductionDate:moment(info.current.equipmentProductionDate), equipmentMaintenanceEndDate:moment(info.current.equipmentMaintenanceEndDate) }); 
             form2.setFieldValue('equipmentHeadId', +info.current.equipmentHeadId);
+            // 显示产品图的缩略图
+            if ( equipmentPhotoPath ){  
+                let config = window.g;            
+                setFileList([
+                    {
+                        uid: '-1',
+                        name: 'image.png',
+                        status: 'done',
+                        prevPath:equipmentPhotoPath,
+                        url:`http://${config.apiHost}/upload/getFileByPath?filePath=${equipmentPhotoPath}`
+                    }
+                ])           
+            } else {
+                setFileList([]);
+            }
+            
         } else {
             form1.resetFields();
             form2.resetFields();
+            setFileList([]);
         }
     },[info])
-    console.log(finalSensors);
     return (
         <div>
             {/* 基础信息 */}
@@ -133,7 +148,7 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
                             <Col span={12}>
                                 <Form.Item label='设备类型' name='equipmentType' rules={[{ required: true, message:'该字段不能为空' }]}>
                                     <Select>
-                                        <Option value='1'>电机</Option>
+                                        <Option value={1}>电机</Option>
                                     </Select>
                                 </Form.Item>
                             </Col>
@@ -156,7 +171,7 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
                             </Col>                        
                             <Col span={12}>
                                 <Form.Item label='功率' name='equipmentPower' rules={[{ required: true, message:'该字段不能为空' }]}> 
-                                    <InputNumber style={{ width:'100%' }} addonAfter='HZ' />
+                                    <InputNumber style={{ width:'100%' }} addonAfter='Kw' />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
@@ -178,7 +193,7 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
                                 <Form.Item label='底座类型' name='equipmentPedestal' rules={[{ required: true, message:'该字段不能为空' }]}>
                                     <Select>
                                         <Option value={0}>柔性</Option>
-                                        <Option value={1}>硬性</Option>
+                                        <Option value={1}>刚性</Option>
                                     </Select>
                                 </Form.Item>
                             </Col>
@@ -194,12 +209,12 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
                             </Col>
                             <Col span={12}>
                                 <Form.Item label='投产日期' name='equipmentProductionDate' rules={[{ required: true, message:'该字段不能为空' }]}>
-                                    <DatePicker showTime style={{ width:'100%' }} locale={zhCN} />
+                                    <DatePicker style={{ width:'100%' }} locale={zhCN} />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
                                 <Form.Item label='维保截止日期' name='equipmentMaintenanceEndDate' rules={[{ required: true, message:'该字段不能为空' }]}>
-                                    <DatePicker showTime style={{ width:'100%' }} locale={zhCN} />
+                                    <DatePicker style={{ width:'100%' }} locale={zhCN} />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
@@ -266,8 +281,29 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
                                         }
                                     </Select>
                                 </Form.Item>
-                            </Col>                        
-                            <Col span={12}>
+                            </Col>   
+                            {
+                                sensorTypes.map(item=>(
+                                    <Col span={12} key={item.key}>
+                                        <Form.Item label={'绑定' + item.title} name={'sensor'+item.key}>
+                                            <Select 
+                                                mode='multiple'
+                                                allowClear
+                                                style={{ width:'100%' }}
+                                                placeholder={'选择要绑定的' + item.title}
+                                                options={
+                                                    sensorMaps[item.key] && sensorMaps[item.key].length 
+                                                    ?
+                                                    sensorMaps[item.key].map(i=>({ value:i.sensorCode, label:i.sensorName }))
+                                                    :
+                                                    [{ value:'null', disabled:true, label:'没有可绑定的' + item.title }]
+                                                }
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                ))
+                            }                     
+                            {/* <Col span={12}>
                                 <Form.Item label='绑定传感器' name='sensorList'>
                                     {
                                         finalSensors && finalSensors.length 
@@ -285,7 +321,7 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
                                         <Button type='primary' onClick={()=>history.push('/mach_manage/mach_manage_sensor')}>请先添加传感器设备</Button>
                                     }                                       
                                 </Form.Item>
-                            </Col>
+                            </Col> */}
                             <Col span={24}>
                                 <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 4 }} style={{ margin:'1rem 0'}}>
                                     <Button onClick={onClose} style={{ marginRight:'0.5rem' }}>取消</Button>
@@ -294,23 +330,39 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
                                         .then(value1=>{
                                             form2.validateFields()
                                             .then(value2=>{
-                                                console.log(value2);
+                                                // console.log(value2);
                                                 let userInfo = userList.filter(i=>i.userId === value2.equipmentHeadId)[0];
                                                 let values = { ...value1, equipmentHeadId:value2.equipmentHeadId  };
+                                                // 判断日期字段的合理性
+                                                if (values.equipmentMaintenanceEndDate.diff(values.equipmentProductionDate, 'days') <= 0 ) {
+                                                    message.info('维保截止日期不能小于投产日期');
+                                                    return;
+                                                }
                                                 values.equipmentHeadName = userInfo.userName;
                                                 values.equipmentHeadPhone = userInfo.phone;
                                                 values.equipmentHeadEmail = userInfo.email;
-                                                values.equipmentProductionDate = values.equipmentProductionDate.format('YYYY-MM-DD HH:mm:ss');
-                                                values.equipmentMaintenanceEndDate = values.equipmentMaintenanceEndDate.format('YYYY-MM-DD HH:mm:ss');                                              
+                                                values.equipmentProductionDate = values.equipmentProductionDate.format('YYYY-MM-DD') + ' 00:00:00';
+                                                values.equipmentMaintenanceEndDate = values.equipmentMaintenanceEndDate.format('YYYY-MM-DD') + ' 00:00:00';                                                                                              
+                                                
                                                 if ( fileList.length ) {
-                                                    values.fileList = fileList.map(i=>i.size ? i.originFileObj : i)
+                                                    if ( info.forEdit ) {
+                                                        if ( info.current.equipmentPhotoPath !== fileList[0].prevPath ) {
+                                                            // 上传文件变化时才更新产品图
+                                                            values.fileList = fileList.map(i=>i.size ? i.originFileObj : i);
+                                                        }
+                                                    } else {
+                                                        values.fileList = fileList.map(i=>i.size ? i.originFileObj : i)
+                                                    }
                                                 }
-                                                let newSensors = value2.sensorList ? value2.sensorList : [];                                              
+                                                let newSensors = [];
+                                                Object.keys(value2).forEach(key=>{
+                                                    if ( key.includes('sensor') && value2[key] && value2[key].length ){
+                                                        value2[key].forEach(code=>newSensors.push(code));
+                                                    }
+                                                })
                                                 // 筛选出要解绑的传感器
                                                 let result = [];
                                                 let bindSensorIds = bindSensors.map(i=>i.sensorCode);
-                                                console.log('newSensors', newSensors);
-                                                console.log(bindSensors);
                                                 bindSensors.forEach(i=>{
                                                     if ( ! newSensors.includes(i.sensorCode)) {
                                                         result.push({ action:'unbind', payload:i.equipmentSensorId })
@@ -324,19 +376,16 @@ function AddDrawer({ userList, info, unbindSensors, bindSensors, tplList, onClos
                                                 })
                                                 if ( result.length ) {
                                                     values.sensorList = result;
-                                                }
-                                                console.log(result)
-                                                console.log(values);
+                                                }                                     
                                                 new Promise((resolve, reject)=>{
                                                     onDispatch({ type:'mach/addMachAsync', payload:{ values, resolve, reject, forEdit:info.forEdit }})
                                                 })
                                                 .then(()=>{
-                                                    message.success(`${ info.forEdit ? '更新' : '添加'}设备成功`);
-                                                    
+                                                    message.success(`${ info.forEdit ? '更新' : '添加'}设备成功`);                                                  
                                                     onClose();
+                                                    setFileList([]);
                                                 })
                                                 .catch(msg=>message.error(msg))
-                                        
                                             })
                                         }) 
                                     }}>{ info.forEdit ? '更新' : '添加' }</Button>

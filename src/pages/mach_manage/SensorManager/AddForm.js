@@ -1,57 +1,82 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Form, Button, Input, Select, DatePicker, Upload, InputNumber, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
-
+import SiderMenu from '@ant-design/pro-layout/lib/components/SiderMenu/SiderMenu';
+const { Option } = Select;
 const layout = {
     labelCol: { span: 6 },
     wrapperCol: { span: 18 },
 };
-function AddForm({ userList, info, onClose, onDispatch }){
+function AddForm({ userList, info, onClose, onDispatch, sensorTypes, sensorModelMaps }){
     const [form] = Form.useForm();
+    const [sensorType, setSensorType] = useState(null)
+    const [modelList, setModelList] = useState([]);
+    const [value, setValue] = useState('');
+    
+    useEffect(()=>{
+        let arr = sensorModelMaps[sensorType] || [];
+        setModelList(arr);
+        form.setFieldValue('sensorModel', null);
+        setValue('');
+    },[sensorType])
     useEffect(()=>{
         if ( info.forEdit ) {
+            let { sensorType } = info.current;
+            let arr = sensorModelMaps[sensorType] || [];
+            setModelList(arr);
             form.setFieldsValue(info.current);
         } else {
             form.resetFields();
         }
-    },[info])
+    },[info]);
     return (
         
         <Form form={form} { ...layout }>
-                
-            <Form.Item label='传感器编码' name='sensorCode' rules={[{ required: true, message:'该字段不能为空' }]}>
+            
+            <Form.Item label='传感器类型' name='sensorType' rules={[{ required: true, message:'传感器类型不能为空' }]}>
+                <Select onChange={value=>setSensorType(value)}>
+                    {
+                        sensorTypes.map(item=>(
+                            <Option key={item.key} value={item.key}>{ item.title }</Option>
+                        ))
+                    }
+                </Select>                               
+            </Form.Item>
+            <Form.Item label='传感器型号' name='sensorModel' rules={[{ required: true, message:'传感器型号不能为空' }]}>
+                <Select dropdownRender={menu=>(
+                    <>
+                        { menu }
+                        <div style={{ display:'flex', margin:'8px 0', padding:'0.5rem 1rem' }}>
+                            <Input value={value} onChange={e=>setValue(e.target.value)} allowClear={{ clearIcon:<CloseCircleOutlined onClick={()=>{
+                                let arr = sensorModelMaps[sensorType] || [];
+                                setModelList(arr);
+                                setValue('');
+                            }} />}}  />
+                            <Button type='primary' onClick={()=>{
+                                let arr = modelList.filter(i=>i.modelDesc.includes(value));
+                                setModelList(arr);
+                            }}>搜索</Button>
+                        </div>
+                    </>
+                )}>
+                    {
+                       
+                        modelList.map(item=>(
+                            <Option key={item.modelName} value={item.modelName}>{ item.modelDesc }</Option>
+                        ))
+                        
+                    }
+                </Select>                     
+            </Form.Item> 
+            <Form.Item label='传感器编码' name='sensorCode' rules={[{ required: true, message:'传感器编码不能为空' }]}>
                 <Input />
             </Form.Item>
-        
-        
-            <Form.Item label='传感器名称' name='sensorName' rules={[{ required: true, message:'该字段不能为空' }]}>
-                <Input />                               
+            <Form.Item label='传感器名称' name='sensorName' rules={[{ required: true, message:'传感器名称不能为空' }]}>
+                <Input />
             </Form.Item>
-        
-        
-            <Form.Item label='传感器型号' name='sensorModel' rules={[{ required: true, message:'该字段不能为空' }]}>
-                <Select>
-                    <Option value='A'>A型</Option>
-                    <Option value='B'>B型</Option>
-                </Select>                               
-            </Form.Item>
-        
-        
-            <Form.Item label='传感器类型' name='sensorType' rules={[{ required: true, message:'该字段不能为空' }]}>
-                <Select>
-                    <Option value={0}>电表</Option>
-                    <Option value={1}>震动</Option>
-                    <Option value={2}>温度</Option>
-                </Select>                               
-            </Form.Item>
-        
-        
-            <Form.Item label='采用标准' name='sensorCriteria' rules={[{ required: true, message:'该字段不能为空' }]}>
-                <Select>
-                    <Option value='typeA'>A协议</Option>
-                    <Option value='typeB'>B协议</Option>
-                </Select>
+            <Form.Item label='采用标准' name='sensorCriteria'>
+                <Input />
             </Form.Item>
                 
             <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 6 }}>
@@ -59,6 +84,7 @@ function AddForm({ userList, info, onClose, onDispatch }){
                 <Button type='primary' onClick={()=>{
                     form.validateFields()
                     .then(values=>{
+                        // console.log(values);
                         new Promise((resolve, reject)=>{
                             onDispatch({ type:'mach/addSensorAsync', payload:{ values, resolve, reject, forEdit:info.forEdit }})
                         })

@@ -56,3 +56,12 @@ export function getMachWarningTrend(data = {}){
         method:'GET',
         }); 
 }
+
+export function getCostTrend(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/dataView/getCosts?' + str, { 
+        method:'GET',
+        }); 
+}

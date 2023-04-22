@@ -141,7 +141,7 @@ function BoardDrawer({ dispatch, data, fieldMaps, chartMaps, onClose }){
                     dispatch({ type:'board/updateBoardListAsync', payload:{ resolve, reject, json:items }})
                 })
                 .then(()=>{
-                    message.success('看报保存成功');
+                    message.success('看板保存成功');
                     onClose();
                 })
                 .catch(msg=>message.error(msg))

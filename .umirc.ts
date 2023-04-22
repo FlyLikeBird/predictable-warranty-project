@@ -80,7 +80,8 @@ export default defineConfig({
                     { path:'/sys_manage/sys_manage_user', component:'@/pages/sys_manage/UserManager'},
                     { path:'/sys_manage/sys_manage_role', component:'@/pages/sys_manage/RoleManager'},
                     { path:'/sys_manage/sys_manage_log', component:'@/pages/sys_manage/LogManager'},
-                    { path:'/sys_manage/sys_manage_pwd', component:'@/pages/sys_manage/UpdatePwd'}
+                    { path:'/sys_manage/sys_manage_pwd', component:'@/pages/sys_manage/UpdatePwd'},
+                    { path:'/sys_manage/sys_manage_fee', component:'@/pages/sys_manage/FeerateManager'}
                 ]
             },
             // 监控中心

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Select, Tabs, Tag, Timeline } from 'antd';
+import { FileImageFilled } from '@ant-design/icons';
 import CustomTabs from './components/CustomTabs';
 import style from '@/pages/IndexPage.css';
 import SegmentLabel from './components/SegmentLabel';
@@ -10,15 +11,15 @@ import BatteryLowImg from '../../../../public/battery-low.png';
 import BatteryHighImg from '../../../../public/battery-normal.png';
 
 
-function MachDetailManager({ list, statusList, currentMach, onDispatch, onSelect }){
+function MachDetailManager({ list, currentMach, onDispatch, onSelect }){
     
     const infoList = [
         { label:'设备状态', value:'运行中' },
         { label:'电池状态', value:+currentMach.batteryStatus === 1 ? '电量低' : '正常', hasIcon:true },
         { label:'采用标准', value:currentMach.vibrationStandard },
         { label:'标准评价', value:'', isSegment:true },
-        { label:'RSSI', value:currentMach.RSSI || '--', unit:'dbm'},
-        { label:'负荷', value:currentMach.load, unit:'kw'},
+        // { label:'RSSI', value:currentMach.RSSI || '--', unit:'dbm'},
+        { label:'负荷率', value:currentMach.load, unit:'kw'},
         { label:'电流', value:currentMach.electricity, unit:'A'},
         { label:'电压', value:currentMach.voltage, unit:'V'},
         { label:'最后一次上传时间', value:currentMach.lastUploadTime },
@@ -26,7 +27,19 @@ function MachDetailManager({ list, statusList, currentMach, onDispatch, onSelect
         { label:'建议保养时间', value:currentMach.adviceUpkeepTime},
         { label:'必须保养时间', value:currentMach.mustUpkeepTime }
     ];
-  
+    let config = window.g;
+    let imgPath = currentMach.equipmentPhotoPath ? `http://${config.apiHost}/upload/getFileByPath?filePath=${currentMach.equipmentPhotoPath}` : '';
+    let ImgCom = 
+        imgPath
+        ?
+        <div style={{ height:'100%', textAlign:'center' }} ><img src={imgPath} style={{ height:'70%' }} /></div>
+        :
+        <div style={{ textAlign:'center' }}>
+            <FileImageFilled style={{ color:'#c9c9c9', fontSize:'4rem', margin:'0.5rem 0' }} />
+            <div>还没有配置设备图</div>
+        </div>
+    
+    
     return (
         <>
             <div style={{ height:'40px' }}>
@@ -53,7 +66,12 @@ function MachDetailManager({ list, statusList, currentMach, onDispatch, onSelect
                                 type='card'
                                 className={style['flex-tabs']}
                                 items={[
-                                    { label:'图片', key:'img', children:(<div><img src={MachImg} /></div>)},
+                                    { 
+                                        label:'图片', 
+                                        key:'img', 
+                                        children:ImgCom
+                                        
+                                    },
                                     // { label:'视频    A', key:'video' }
                                 ]}
                             />
@@ -140,7 +158,7 @@ function MachDetailManager({ list, statusList, currentMach, onDispatch, onSelect
                         <div className={style['card-container-wrapper']} style={{ width:'26%', paddingRight:'0' }}>
                             <div className={style['card-container']} style={{ boxShadow:'none' }}>
                                 <div className={style['card-title']}>
-                                    <span>事件记录</span>
+                                    <span>设备全生命周期时间记录</span>
                                     <span className={style['symbol']}></span>
                                 </div>
                                 <div className={style['card-content']}>

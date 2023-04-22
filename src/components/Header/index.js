@@ -113,7 +113,7 @@ const Header = ({ onDispatch, msg, routePath, userInfo, theme  })=> {
                             routePath.map((item, index)=>(
                                 <span key={index}>
                                     <span style={{ margin:'0 4px'}}>/</span>
-                                    <span style={{ fontSize:'0.8rem', color:index === routePath.length - 1 ? '#000' : 'rgba(0, 0, 0, 0.65)' }}>{ item.menu_name }</span>
+                                    <span style={{ color:index === routePath.length - 1 ? '#000' : 'rgba(0, 0, 0, 0.65)' }}>{ item.menu_name }</span>
                                 </span>
                             )) 
                             :

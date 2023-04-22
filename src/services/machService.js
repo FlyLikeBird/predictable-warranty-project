@@ -73,6 +73,18 @@ export function updateMach(data = {}){
         }); 
 }
 
+export function delMach(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/equipment/deleteEquipmentInfo', { 
+        method:'DELETE',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
 
 export function getUnbindSensors(data = {}){
     let token = apiToken();
@@ -89,19 +101,6 @@ export function getBindSensors(data = {}){
     let str = translateObj(data);
     return request('/equipment/getSensorsRelational?' + str, { 
         method:'GET',
-        }); 
-}
-
-export function delMach(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/equipment/updateEquipmentInfo', { 
-        method:'PUT',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
         }); 
 }
 
@@ -132,6 +131,14 @@ export function unbindSensor(data = {}){
 }
 
 // 添加传感器信息
+export function getSensorModelList(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/sensor/getMeterModelList?' + str, { 
+        method:'GET',
+        }); 
+}
 export function getSensorList(data = {}){
     let token = apiToken();
     data.token = token;
@@ -165,6 +172,18 @@ export function updateSensor(data = {}){
         body:str
         }); 
 }
+export function delSensor(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/sensor/deleteSensors', { 
+        method:'DELETE',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
 export function upload(data = {}){
     let token = apiToken();
     let formData = new FormData();
@@ -174,5 +193,13 @@ export function upload(data = {}){
     return request('/upload/fileUpload', { 
         method:'POST',
         body:formData
+        }); 
+}
+export function getFileBlob(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/upload/getFileByPath?' + str, { 
+        method:'GET',
         }); 
 }

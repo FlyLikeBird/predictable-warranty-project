@@ -59,97 +59,20 @@ export function delOrder(data = {}){
         body:str
         }); 
 }
-
-export function getBindSensors(data = {}){
+// 保养计划
+export function getMaintainList(data = {}){
     let token = apiToken();
-    data.token = token;
+    // data.token = token;
     let str = translateObj(data);
-    return request('/equipment/getSensorsRelational?' + str, { 
+    return request('/wisdomOM/getUpkeepProject?' + str, { 
         method:'GET',
         }); 
 }
-
-export function delMach(data = {}){
+export function getMaintainDetail(data = {}){
     let token = apiToken();
-    data.token = token;
+    // data.token = token;
     let str = translateObj(data);
-    return request('/equipment/updateEquipmentInfo', { 
-        method:'PUT',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
-        }); 
-}
-
-export function bindSensor(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/equipment/addSensorsRelational', { 
-        method:'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
-        }); 
-}
-
-export function unbindSensor(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/equipment/removeSensorsRelational', { 
-        method:'DELETE',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
-        }); 
-}
-
-// 添加传感器信息
-export function getSensorList(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/sensor/getSensorsList?' + str, { 
+    return request('/wisdomOM/getUpkeepProjectDetail?' + str, { 
         method:'GET',
-        }); 
-}
-
-export function addSensor(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/sensor/addSensors', { 
-        method:'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
-        }); 
-}
-export function updateSensor(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/sensor/updateSensors', { 
-        method:'PUT',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
-        }); 
-}
-export function upload(data = {}){
-    let token = apiToken();
-    let formData = new FormData();
-    formData.append('file', data.file);
-    formData.append('uploadType', 'mach');
-    // formData.append('uploadType', '')
-    return request('/upload/fileUpload', { 
-        method:'POST',
-        body:formData
         }); 
 }

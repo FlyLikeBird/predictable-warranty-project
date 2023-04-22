@@ -331,7 +331,9 @@ html, body {
 .flex-tabs:global(.ant-tabs) :global(.ant-tabs-content){
     height:100%;
 }
-
+.flex-tabs:global(.ant-tabs) :global(.ant-tabs-content) :global(.ant-tabs-tabpane) {
+    height:100%;
+}
 /* 
     自定义树组件样式
 */

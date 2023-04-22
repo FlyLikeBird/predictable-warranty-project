@@ -2,33 +2,11 @@ import {
     getBoardList, updateBoardList,
     getMachStatus, getSumAlarm,
     getMachWarningRank, 
-    getMachWarningTrend
+    getMachWarningTrend,
+    getCostTrend
 } from '../services/boardService';
-import { } from '../services/alarmService';
+import { getAlarmTrend } from '../services/alarmService';
 import moment from 'moment';
-// let list = [
-//     { 
-//         label:'总览看板', 
-//         key:0,
-//         dataCardList:[
-//             { title:'电机总数', isSelected:true, value:43, unit:'台', params:[{ text:'运行中', value:32, unit:'', color:'#63d17d' }, { text:'停机中', value:11, unit:'' }] },
-//             { title:'维保中电机数', isSelected:true, value:43, unit:'台', params:[{ text:'维修', value:32, unit:'' }, { text:'保养', value:11, unit:'' }] },
-//             { title:'维保超时电机数', isSelected:true, value:43, unit:'台',  params:[{ text:'维修', value:32, unit:'' }, { text:'保养', value:11, unit:'' }] },
-//             { title:'本月需维保电机数', isSelected:true, value:43, unit:'台', params:[{ text:'维修', value:32, unit:'' }, { text:'保养', value:11, unit:'' }] },
-//             { title:'今日需维保电机数', isSelected:true, value:43, unit:'台', params:[{ text:'维修', value:32, unit:'' }, { text:'保养', value:11, unit:'' }] },
-//             { title:'今日能耗成本', isSelected:true, value:3412, unit:'元', params:[{ text:'同比', value:34.5, unit:'%' }, { text:'环比', value:10.2, unit:'%' }] },
-
-//         ],
-//         chartCardList:[
-//             { title:'电机成本趋势', key:'mach-cost', isSelected:true },
-//             { title:'电机异常排名', key:'mach-alarm-rank', isSelected:true },
-//             { title:'电机异常趋势', key:'mach-alarm-trend', isSelected:true },
-//             { title:'实时告警', key:'realtime-alarm', isSelected:true },
-//             { title:'平台告警趋势', key:'total-alarm', isSelected:true },
-//             { title:'电机维保成本排名', key:'multi-cost', isSelected:true }
-//         ]
-//     }
-// ]
 
 let list = [
     { 
@@ -45,7 +23,10 @@ let list = [
             { key:'h', a:1 },
             { key:'i', a:1 },
             { key:'j', a:1 },
-            { key:'k', a:1 }
+            { key:'k', a:1 },
+            { key:'l', a:1 },
+            { key:'m', a:1 },
+            { key:'n', a:1 }
         ],
         chartCardList:[
             { key:'A', a:1 },
@@ -62,7 +43,7 @@ const initialState = {
     boardList:list,
     currentIndex:0,
     fieldMaps:{
-        'a':{ title:'电机总数', dataIndex:'plus', unit:'台', subTitle:[{ title:'运行中', dataIndex:'0', unit:'' },{ title:'停机中', dataIndex:'1', unit:'' }]},
+        'a':{ title:'设备总数', dataIndex:'plus', unit:'台', subTitle:[{ title:'运行中', dataIndex:'0', unit:'' },{ title:'停机中', dataIndex:'1', unit:'' }]},
         'b':{ title:'维保中电机数' },
         'c':{ title:'维保超时电机数' },
         'd':{ title:'本月需维保电机数' },
@@ -73,14 +54,17 @@ const initialState = {
         'i':{ title:'本月告警', color:'#f53f3f', dataIndex:'warningCount', unit:'件', subTitle:[{ hasArrow:true, title:'同比', dataIndex:'yoy', unit:'%' }, { hasArrow:true, title:'环比', dataIndex:'chain', unit:'%'}] },
         'j':{ title:'本年预警', color:'#ff7d00', dataIndex:'warningCount', unit:'件', subTitle:[{ hasArrow:true, title:'同比', dataIndex:'yoy', unit:'%' }, { hasArrow:true, title:'环比', dataIndex:'chain', unit:'%'}] },
         'k':{ title:'本年告警', color:'#f53f3f', dataIndex:'warningCount', unit:'件', subTitle:[{ hasArrow:true, title:'同比', dataIndex:'yoy', unit:'%' }, { hasArrow:true, title:'环比', dataIndex:'chain', unit:'%'}] },
+        'l':{ title:'今日成本', dataIndex:'totalCost', unit:'元', subTitle:[{ title:'电费成本', dataIndex:'eleCost', unit:'元'}, { title:'维保成本', dataIndex:'maintainCost', unit:'元'}] },
+        'm':{ title:'本月成本', dataIndex:'totalCost', unit:'元', subTitle:[{ title:'电费成本', dataIndex:'eleCost', unit:'元'}, { title:'维保成本', dataIndex:'maintainCost', unit:'元'}] },
+        'n':{ title:'本年成本', dataIndex:'totalCost', unit:'元', subTitle:[{ title:'电费成本', dataIndex:'eleCost', unit:'元'}, { title:'维保成本', dataIndex:'maintainCost', unit:'元'}] },
     },
     chartMaps:{
-        'A':'电机成本趋势',
-        'B':'电机异常排名',
-        'C':'电机异常趋势',
+        'A':'设备成本趋势',
+        'B':'设备异常排名',
+        'C':'设备异常趋势',
         'D':'实时告警',
         'E':'平台告警趋势',
-        'F':'电机维保成本排名'
+        'F':'设备维保成本排名'
     },
     // 数据卡片状态
     statusSourceData:{},
@@ -102,10 +86,10 @@ export default {
             yield put({ type:'fetchSumAlarm', payload:{ type:['h', 'i'], map:['0', '1'], startDate:moment(date).startOf('month'), endDate:moment(date).endOf('month') }});
             // 本年告警信息
             yield put({ type:'fetchSumAlarm', payload:{ type:['j', 'k'], map:['0', '1'], startDate:moment(date).startOf('year'), endDate:moment(date).endOf('year') }});
-            let { user:{ startDate, endDate }} = yield select();
-            yield put({ type:'fetchWarningRank', payload:{ startDate, endDate }});
-            yield put({ type:'fetchWarningTrend', payload:{ startDate, endDate, timeType:'2' }});
-            yield put({ type:'fetchSumWarning', payload:{ startDate, endDate, timeType:'2' }});
+            // 本月成本信息
+            yield put({ type:'fetchMachCost', payload:{ type:'l', startDate:moment(date), endDate:moment(date), timeType:'3' }})
+            yield put({ type:'fetchMachCost', payload:{ type:'m', startDate:moment(date).startOf('month'), endDate:moment(date).endOf('month'), timeType:'2' }})
+            yield put({ type:'fetchMachCost', payload:{ type:'n', startDate:moment(date).startOf('year'), endDate:moment(date).endOf('year'), timeType:'1' }})
         },
         // 更新看板列表状态
         *updateBoardListAsync(action, { put, select, call }){
@@ -143,6 +127,14 @@ export default {
                 yield put({ type:'getStatusDataResult', payload:{ data:data.data, type, map }})
             }
         },
+        *fetchMachCost(action, { put, call, select }){
+            let { user:{ companyId }} = yield select();
+            let { startDate, endDate, timeType, type } = action.payload || {};
+            let { data } = yield call(getCostTrend, { companyId, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD'), timeType });
+            if ( data && data.code === 200 ){
+                yield put({ type:'getMachCostResult', payload:{ data:data.data, type }});
+            }
+        },
         // 图表卡片接口
         *fetchWarningRank(action, { put, call, select }){
             let { user:{ companyId } } = yield select();
@@ -155,17 +147,28 @@ export default {
         *fetchWarningTrend(action, { put, call, select }){
             let { user:{ companyId }} = yield select();
             let { startDate, endDate, timeType } = action.payload || {};
+            timeType = timeType === '10' ? '2' : timeType;
             let { data } = yield call(getMachWarningTrend, { companyId, timeType, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD') });
             if ( data && data.code === 200 ) {
                 yield put({ type:'getChartDataResult', payload:{ data:data.data, type:'C' }});
             }
         },
-        *fetchSumWarning(action, { put, call, select }){
+        *fetchAlarmTypes(action, { select, call, put }){
             let { user:{ companyId }} = yield select();
             let { startDate, endDate, timeType } = action.payload || {};
-            let { data } = yield call(getMachWarningTrend, { companyId, timeType, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD') });
+            timeType = timeType === '10' ? '2' : timeType;
+            let { data } = yield call(getAlarmTrend, { companyId, timeType, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD')});
+            if ( data && data.code === 200 ){
+                yield put({ type:'getChartDataResult', payload:{ data:data.data, type:'E' }});                
+            }
+        },  
+        *fetchCostTrend(action, { put, call, select }){
+            let { user:{ companyId }} = yield select();
+            let { startDate, endDate, timeType } = action.payload || {};
+            timeType = timeType === '10' ? '2' : timeType;
+            let { data } = yield call(getCostTrend, { companyId, beginDate:startDate.format('YYYY-MM-DD'), endDate:endDate.format('YYYY-MM-DD'), timeType });
             if ( data && data.code === 200 ) {
-                yield put({ type:'getChartDataResult', payload:{ data:data.data, type:'E' }});
+                yield put({ type:'getChartDataResult', payload:{ data:data.data, type:'A'}});
             }
         }
     },
@@ -195,6 +198,16 @@ export default {
 
                 }
             });
+            return { ...state, statusSourceData:result };
+        },
+        getMachCostResult(state, { payload:{ data, type }}){
+            let result = { ...state.statusSourceData };
+            let totalCost = 0, eleCost = 0, maintainCost = 0;
+            data.forEach((item)=>{
+                eleCost += ( item.electricityCost || 0 ) ;
+                maintainCost += ( item.maintenanceCost || 0 );
+            })
+            result[type] = { totalCost:eleCost + maintainCost, eleCost, maintainCost };
             return { ...state, statusSourceData:result };
         },
         getChartDataResult(state, { payload:{ data, type }}){

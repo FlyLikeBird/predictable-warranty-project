@@ -1,9 +1,9 @@
 import { 
     getTplList,
     getMachRunningStatus, getMachRunningParams, getMachRunningChart,
-    getMachList, addMach, updateMach, 
+    getMachList, addMach, updateMach, delMach, 
     getUnbindSensors, getBindSensors,
-    getSensorList, addSensor, updateSensor,
+    getSensorModelList, getSensorList, addSensor, updateSensor, delSensor,
     bindSensor, unbindSensor,
     upload
 } from '../services/machService';
@@ -15,6 +15,10 @@ const initialState = {
     isLoading:false,
     total:0,
     sensorList:[],
+    sensorTypes:[{ title:'电表', key:1 }, { title:'震动', key:4 }],                    
+    sensorModelMaps:{},
+    //  筛选条件
+    optional:{},
     // 获取可绑定的传感器列表
     unbindSensors:[],
     // 获取当前设备已绑定的传感器
@@ -101,12 +105,42 @@ export default {
                 if ( reject ) reject(data.message);
             }
         },
+        *delMachAsync(action, { put, call, select }){
+            let { resolve, reject, equipmentCode } = action.payload || {};
+            let { data } = yield call(delMach, { equipmentCode });
+            if ( data && data.code === 200 ) {
+                if ( resolve ) {
+                    yield put({ type:'fetchMachList'});
+                }
+            } else {
+                if ( reject ) reject(data.message);
+            }
+        },
         // 传感器
+        *fetchSensorModels(action, { put, call, select, all }){
+            let { mach:{ sensorTypes }} = yield select();
+            let dataArr = yield all(
+                sensorTypes.map(i=>call(getSensorModelList, { energyType:i.key }))
+            );
+            if ( dataArr && dataArr.length ) {
+                let result = sensorTypes.reduce((sum, cur, index)=>{
+                    sum[cur.key] = dataArr[index].data.data;
+                    return sum;
+                }, {})
+                yield put({ type:'getSensorModelsResult', payload:{ data:result }});
+            }
+        },
         *fetchSensorList(action, { put, call, select }){
-            let { user:{ companyId }} = yield select();
+            let { user:{ companyId }, mach:{ optional }} = yield select();
             let { currentPage } = action.payload || {};
             currentPage = currentPage || 1;
-            let { data } = yield call(getSensorList, { companyId, page:currentPage, pageSize:12 });
+            let params = { companyId, page:currentPage, pageSize:12 };
+            Object.keys(optional).forEach(key=>{
+                if(optional[key]){
+                    params[key] = optional[key];
+                }
+            })
+            let { data } = yield call(getSensorList, params);
             if ( data && data.code === 200 ){
                 yield put({ type:'getSensorResult', payload:{ data:data.data, currentPage }});
             }
@@ -167,11 +201,17 @@ export default {
         getSensorResult(state, { payload:{ data, currentPage, total }}){
             return { ...state, sensorList:data, currentPage, total };
         },
+        getSensorModelsResult(state, { payload:{ data }}){
+            return { ...state, sensorModelMaps:data };
+        },
         getTplListResult(state, { payload:{ data }}){
             return { ...state, tplList:data };
         },
         getMachRunningStatusResult(state, { payload:{ data }}){
             return { ...state, statusList:data };
+        },
+        setOptional(state, { payload }){
+            return { ...state, optional:payload };
         },
         reset(){
             return initialState;

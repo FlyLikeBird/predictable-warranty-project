@@ -13,13 +13,13 @@ function DataBoardManager({ dispatch, user, board }){
     const [visible, setVisible] = useState(false);
     useEffect(()=>{
         if ( authorized ){
-            dispatch({ type:'user/toggleTimeType', payload:'2' });
             dispatch({ type:'board/initBoard'});
         }
     },[authorized])
     const handleDispatch = useCallback((action)=>{
         dispatch(action);
     },[]);
+    console.log(statusSourceData);
     return (
         <div style={{ height:'100%' }}>
             <div style={{ height:'40px', display:'flex', justifyContent:'space-between' }}>
