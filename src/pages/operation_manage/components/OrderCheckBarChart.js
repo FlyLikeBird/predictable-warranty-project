@@ -7,47 +7,38 @@ import { downloadExcel } from '@/utils/array';
 import html2canvas from 'html2canvas';
 import style from '@/pages/IndexPage.css';
 
-function MultiBarChart({ data, title, forReport }) {
+const statusMaps = {
+  completedOnTime: { text: '按时完成', color: '#00b42a' },
+  timeoutComplete: { text: '超时完成', color: '#ff7d00' },
+  unFinish: { text: '未完成', color: '#fadc19' },
+};
+function OrderCheckBarChart({ data, forReport }) {
   let echartsRef = useRef();
   let seriesData = [];
   let categoryData = [];
-  let totalAlarm = {};
-  let typeArr = [];
-  categoryData = Object.keys(data).sort((a, b) => {
-    let prevTime = new Date(a).getTime();
-    let nowTime = new Date(b).getTime();
-    return prevTime < nowTime ? -1 : 1;
-  });
-  // 获取所有告警类型
-  categoryData.forEach((key) => {
-    if (data[key] && data[key].length) {
-      data[key].forEach((i) => {
-        if (!totalAlarm[i.warningRuleName]) {
-          typeArr.push(i.warningRuleName);
-          totalAlarm[i.warningRuleName] = [];
-        }
-      });
-    }
-  });
+  let typesData = {};
+
   // 构建堆叠柱图表所需的数据
-  categoryData.forEach((key) => {
-    if (data[key] && data[key].length) {
-      data[key].forEach((i) => {
-        totalAlarm[i.warningRuleName].push(i.totalNum);
-      });
-    } else {
-      typeArr.forEach((i) => {
-        totalAlarm[i].push(0);
-      });
-    }
+  Object.keys(data).forEach((user) => {
+    categoryData.push(user);
+    Object.keys(data[user]).forEach((type) => {
+      if (!typesData[type]) {
+        typesData[type] = [];
+        typesData[type].push(data[user][type]);
+      } else {
+        typesData[type].push(data[user][type]);
+      }
+    });
   });
-  Object.keys(totalAlarm).forEach((type) => {
+
+  Object.keys(typesData).forEach((type) => {
     seriesData.push({
       type: 'bar',
       barWidth: 14,
-      name: type,
-      data: totalAlarm[type],
-      stack: 'alarm',
+      name: statusMaps[type].text,
+      data: typesData[type],
+      stack: 'order',
+      itemStyle: { color: statusMaps[type].color },
     });
   });
 
@@ -56,10 +47,15 @@ function MultiBarChart({ data, title, forReport }) {
       {forReport ? null : (
         <Radio.Group
           size="small"
-          style={{ position: 'absolute', right: '0', zIndex: '10' }}
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '0',
+            zIndex: '10',
+          }}
           onChange={(e) => {
             let value = e.target.value;
-            let fileTitle = '告警趋势';
+            let fileTitle = '人员工单完成情况';
             if (value === 'download' && echartsRef.current) {
               html2canvas(echartsRef.current.ele, {
                 allowTaint: false,
@@ -99,9 +95,10 @@ function MultiBarChart({ data, title, forReport }) {
             }
             if (value === 'excel') {
               var aoa = [],
-                thead = ['告警类型', '单位'];
-              categoryData.forEach((i) => thead.push(i));
+                thead = ['完成情况', '单位'];
+              categoryData.forEach((key) => thead.push(key));
               aoa.push(thead);
+
               seriesData.forEach((item, index) => {
                 let temp = [];
                 temp.push(item.name, '次', ...item.data);
@@ -131,22 +128,22 @@ function MultiBarChart({ data, title, forReport }) {
             trigger: 'axis',
           },
           title: {
-            text: title,
+            text: '人员工单完成情况',
             textStyle: {
               fontSize: 14,
             },
             left: 20,
-            top: 10,
+            top: 20,
           },
           legend: {
             top: 20,
-            data: typeArr,
+            data: Object.keys(statusMaps).map((type) => statusMaps[type].text),
             icon: 'circle',
             itemWidth: 10,
             itemHeight: 10,
           },
           grid: {
-            top: 60,
+            top: 80,
             left: 20,
             right: 40,
             bottom: 10,
@@ -176,29 +173,20 @@ function MultiBarChart({ data, title, forReport }) {
             axisLabel: {
               show: true,
               color: 'rgba(0, 0, 0, 0.65)',
-              formatter: (value) => {
-                if (forReport) {
-                  let strArr = value.split('-');
-                  return strArr[2];
-                } else {
-                  return value;
-                }
-              },
             },
             axisTick: { show: false },
             axisLine: { show: true, lineStyle: { color: '#f0f0f0' } },
           },
-          color: ['#ff7d00', '#f53f3f', '#0fc6c2', '#fadc19', '#9fdb1d'],
           yAxis: {
             type: 'value',
             splitArea: {
               show: false,
             },
+            name: '(件)',
             minInterval: 1,
             splitArea: {
               show: false,
             },
-            name: '(件)',
             axisLine: { show: false },
             axisTick: { show: false },
             splitLine: { show: true, lineStyle: { color: '#f0f0f0' } },
@@ -215,4 +203,4 @@ function MultiBarChart({ data, title, forReport }) {
   );
 }
 
-export default React.memo(MultiBarChart);
+export default React.memo(OrderCheckBarChart);

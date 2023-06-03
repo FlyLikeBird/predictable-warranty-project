@@ -41,7 +41,7 @@ function MachRunningManager({ dispatch, user, mach }) {
               )[0] || {};
             let config = window.g;
             let imgPath = item.equipmentPhotoPath
-              ? `http://${config.apiHost}/upload/getFileByPath?filePath=${item.equipmentPhotoPath}`
+              ? `https://${config.apiHost}/upload/getFileByPath?filePath=${item.equipmentPhotoPath}`
               : '';
             return (
               <div

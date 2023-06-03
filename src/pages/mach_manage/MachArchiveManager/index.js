@@ -181,7 +181,6 @@ function MachArchiveManager({ dispatch, user, mach, userList }) {
           open={info.visible ? true : false}
           className={style['custom-drawer']}
           onClose={() => setInfo({})}
-          maskClosable={false}
           title={info.forEdit ? '更新设备档案' : '新建设备档案'}
         >
           <AddDrawer

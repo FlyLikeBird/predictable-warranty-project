@@ -129,7 +129,7 @@ const Header = ({ onDispatch, msg, routePath, userInfo, theme }) => {
         <div style={{ width: '12%', padding: '0 1rem' }}>
           {/* <img src={LogoImg} style={{ width:'50px' }} /> */}
           <span style={{ fontSize: '1.4rem', margin: '0 0.5rem' }}>
-            预测性维护
+            IPDM预测性维保
           </span>
         </div>
         <div

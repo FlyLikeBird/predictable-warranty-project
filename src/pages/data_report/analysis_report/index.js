@@ -14,7 +14,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import style from './AnalysisReport.css';
 import zhCN from 'antd/es/date-picker/locale/zh_CN';
-
+import moment from 'moment';
 import reportBg from '../../../../public/report-bg.png';
 import PageItem0 from './components/PageItem0';
 import PageItem1 from './components/PageItem1';
@@ -34,16 +34,7 @@ function getPromise(dispatch, action) {
   });
 }
 
-function AnalyzeReport({
-  dispatch,
-  user,
-  energy,
-  monitor,
-  attrEnergy,
-  fields,
-  alarm,
-  analyze,
-}) {
+function AnalyzeReport({ dispatch, user, energy, monitor, alarm, order }) {
   const containerRef = useRef(null);
   const [loading, toggleLoading] = useState(false);
   const { currentCompany, timeType, startDate, endDate } = user;
@@ -52,16 +43,12 @@ function AnalyzeReport({
   function updateData() {
     canDownload = false;
     Promise.all([
-      // getPromise(dispatch, { type:'analyze/fetchReportInfo'}),
-      // getPromise(dispatch, { type:'monitor/fetchSaveSpace'}),
-      // getPromise(dispatch, { type:'energy/fetchCost'}),
-      // getPromise(dispatch, { type:'energy/fetchCostByTime'}),
-      // getPromise(dispatch, { type:'attrEnergy/fetchAttrQuota'}),
-      // getPromise(dispatch, { type:'attrEnergy/fetchEnergyQuota'}),
       // getPromise(dispatch, { type:'alarm/fetchMonitorInfo'}),
       // getPromise(dispatch, { type:'alarm/fetchReportSumInfo'}),
+      getPromise(dispatch, { type: 'order/fetchOrderStatus' }),
       getPromise(dispatch, { type: 'alarm/fetchAlarmTrend' }),
       getPromise(dispatch, { type: 'alarm/fetchAlarmRank' }),
+      getPromise(dispatch, { type: 'alarm/fetchAlarmPercent' }),
     ])
       .then(() => {
         // 如果数据还没加载完，则标记为开始下载状态，等数据加载完自动生成文件
@@ -159,7 +146,10 @@ function AnalyzeReport({
             onChange={(value) => {
               dispatch({
                 type: 'user/setDate',
-                payload: { startDate: value, endDate: value.endOf('month') },
+                payload: {
+                  startDate: moment(value).startOf('month'),
+                  endDate: moment(value).endOf('month'),
+                },
               });
               updateData();
             }}
@@ -195,7 +185,7 @@ function AnalyzeReport({
         {/* 全局日期和维度控制 */}
 
         {/* 诊断结论 */}
-        <PageItem0 />
+        <PageItem0 alarm={alarm} order={order} />
         <PageItem1 alarm={alarm} />
       </div>
 
@@ -224,4 +214,6 @@ function AnalyzeReport({
   );
 }
 
-export default connect(({ user, alarm }) => ({ user, alarm }))(AnalyzeReport);
+export default connect(({ user, alarm, order }) => ({ user, alarm, order }))(
+  AnalyzeReport,
+);

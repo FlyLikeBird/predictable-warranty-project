@@ -1,0 +1,60 @@
+.step-container {
+    height:30px;
+    line-height:30px;
+    text-align:center;
+    display:flex;
+    /* 抵消内部的marginLeft */
+    padding-left:10px;
+    margin:1rem 0;
+}
+
+.step-container .step-item {
+    flex:1;
+    background-repeat:no-repeat;
+    margin-left:-8px;
+    background-size:cover;
+    color:#000; 
+}
+.step-container .step-item.selected {
+    color:#fff;
+}
+
+.custom-timeline:global(.ant-timeline) .timeline-item .timeline-item-head {
+    display:flex;
+    justify-content:space-between;
+    margin:1rem 0;
+}
+.custom-timeline:global(.ant-timeline) :global(.ant-timeline-item) :global(.ant-timeline-item-head) {
+    background:#1890ff;
+}
+.custom-timeline:global(.ant-timeline) .timeline-item .timeline-item-content {
+    margin:1rem 0;
+}
+
+.custom-timeline:global(.ant-timeline) .timeline-item .img-wrapper {
+    display:inline-block;
+    vertical-align:top;
+    width:80px;
+    height:60px;
+    margin-right:1rem;
+    position:relative;
+}
+.custom-timeline:global(.ant-timeline) .timeline-item .img-wrapper > img {
+    width:100%;
+}
+.custom-timeline:global(.ant-timeline) .timeline-item .img-wrapper:hover .img-wrapper-mask {
+    display:block;
+    cursor:pointer;
+}
+.custom-timeline:global(.ant-timeline) .timeline-item .img-wrapper .img-wrapper-mask {
+    position:absolute;
+    display:none;
+    width:80px;
+    height:60px;
+    line-height:60px;
+    text-align: center;
+    background:rgba(0, 0, 0, 0.65);
+    color:#fff;
+    left:0;
+    top:0;
+}

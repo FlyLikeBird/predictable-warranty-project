@@ -1,10 +1,14 @@
 import React from 'react';
 import NormalPieChart from './charts/NormalPieChart';
 import RingPieChart from './charts/RingPieChart';
-import MultiPieChart from './charts/MultiPieChart';
+import PieChart from '@/pages/alarm_manage/components/PieChart';
+import MultiPieChart from '@/pages/operation_manage/components/MultiPieChart';
 import style from '../AnalysisReport.css';
+import IndexStyle from '@/pages/IndexPage.css';
 
-function PageItem0() {
+function PageItem0({ alarm, order }) {
+  const { alarmPercent } = alarm;
+  const { statusInfo, orderTypeMaps, orderStatusMaps } = order;
   return (
     <div className={style['page-container']}>
       <div className={style['page-title']}>
@@ -171,46 +175,35 @@ function PageItem0() {
         </div>
       </div>
       {/*  */}
-      <div style={{ height: '240px', display: 'flex', paddingBottom: '1rem' }}>
-        <div style={{ flex: '1', background: '#f7f8fa' }}>
-          <MultiPieChart
-            title="告警类型分布"
-            hasLabel={true}
-            data={{
-              震动告警: 10,
-              震动预警: 30,
-              电流越限: 3,
-              电压越限: 5,
-              温度越限: 14,
-            }}
-            type="warningType"
-          />
-        </div>
-        <div style={{ flex: '1', background: '#f7f8fa' }}>
-          <MultiPieChart
-            title="处理情况占比"
-            data={{ 已处理: 10, 未处理: 30, 自动转工单: 25, 手动转工单: 40 }}
-            type="warningStatus"
-          />
-        </div>
+      <div
+        className={IndexStyle['card-container']}
+        style={{
+          height: '240px',
+          boxShadow: 'none',
+          background: '#f7f8fa',
+          overflow: 'hidden',
+          marginBottom: '1rem',
+        }}
+      >
+        <PieChart title="告警类型和状态分布" data={alarmPercent} />
       </div>
-      <div style={{ height: '240px', display: 'flex', paddingBottom: '1rem' }}>
-        <div style={{ flex: '1', background: '#f7f8fa' }}>
-          <MultiPieChart
-            title="工单类型占比"
-            hasLabel={true}
-            data={{ 维修工单: 5, 保养工单: 30, 手动新建工单: 40 }}
-            type="orderType"
-          />
-        </div>
-        <div style={{ flex: '1', background: '#f7f8fa' }}>
-          <MultiPieChart
-            title="工单情况占比"
-            data={{ 已处理: 8, 未处理: 30, 挂起: 10 }}
-            type="orderStatus"
-          />
-        </div>
+      <div
+        className={IndexStyle['card-container']}
+        style={{
+          height: '240px',
+          boxShadow: 'none',
+          background: '#f7f8fa',
+          overflow: 'hidden',
+          marginBottom: '1rem',
+        }}
+      >
+        <MultiPieChart
+          data={statusInfo}
+          orderTypeMaps={orderTypeMaps}
+          orderStatusMaps={orderStatusMaps}
+        />
       </div>
+
       <div
         style={{
           height: '120px',
@@ -221,6 +214,9 @@ function PageItem0() {
       >
         <div
           style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
             width: '60px',
             height: '60px',
             borderRadius: '50%',

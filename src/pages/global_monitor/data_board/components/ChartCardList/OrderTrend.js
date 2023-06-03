@@ -1,26 +1,30 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import ReactEcharts from 'echarts-for-react';
-import html2canvas from 'html2canvas';
-import { Radio } from 'antd';
-import XLSX from 'xlsx';
+import { Radio, Button } from 'antd';
 import {
   FileExcelOutlined,
   FileImageOutlined,
+  PieChartOutlined,
   BarChartOutlined,
   LineChartOutlined,
-  PieChartOutlined,
 } from '@ant-design/icons';
+import XLSX from 'xlsx';
+import html2canvas from 'html2canvas';
 import { downloadExcel } from '@/utils/array';
-import CustomDatePicker from './CustomDatePicker';
 import style from '@/pages/IndexPage.css';
+import CustomDatePicker from './CustomDatePicker';
 
-function MachAlarmTrend({ item, data, chartMaps, onDispatch }) {
-  let [chartType, setChartType] = useState('bar');
+let orderTypeMaps = {
+  0: { text: '保养', color: '#722ed1' },
+  1: { text: '维修', color: '#2568ff' },
+};
+
+function OrderTrend({ item, data, chartMaps, onDispatch }) {
   let echartsRef = useRef();
+  let [chartType, setChartType] = useState('bar');
   let seriesData = [];
   let categoryData = [];
-  let preAlarmData = [],
-    alarmData = [];
+  let typesData = {};
   if (data) {
     categoryData = Object.keys(data).sort((a, b) => {
       let prevTime = new Date(a).getTime();
@@ -28,90 +32,55 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }) {
       return prevTime < nowTime ? -1 : 1;
     });
   }
-  // 获取所有告警类型
+
+  // 获取所有工单类型
+  if (categoryData.length) {
+    Object.keys(data[categoryData[0]]).forEach((type) => {
+      typesData[type] = [];
+    });
+  }
+
+  // 构建堆叠柱图表所需的数据
   categoryData.forEach((key) => {
-    if (data[key] && data[key].length) {
-      let obj = data[key].reduce((sum, cur) => {
-        if (!sum['0']) {
-          sum['0'] = 0;
-        }
-        if (!sum['1']) {
-          sum['1'] = 0;
-        }
-        if (cur.warningType == '0') {
-          sum['0'] += cur.totalNum;
-        }
-        if (cur.warningType == '1') {
-          sum['1'] += cur.totalNum;
-        }
-        return sum;
-      }, {});
-      preAlarmData.push(obj['0']);
-      alarmData.push(obj['1']);
-    } else {
-      preAlarmData.push(0);
-      alarmData.push(0);
+    if (data[key]) {
+      Object.keys(data[key]).forEach((type) => {
+        typesData[type].push(data[key][type]);
+      });
     }
   });
   if (chartType === 'pie') {
+    let arr = Object.keys(typesData).map((type) => {
+      return {
+        name: orderTypeMaps[type].text + '工单',
+        itemStyle: { color: orderTypeMaps[type].color },
+        value: typesData[type].reduce((sum, cur) => {
+          sum += cur;
+          return sum;
+        }, 0),
+      };
+    });
     seriesData.push({
       type: 'pie',
       radius: '50%',
       label: { show: false },
       labelLine: { show: false },
-      data: [
-        {
-          name: '预警',
-          itemStyle: { color: '#ff7d00' },
-          value: preAlarmData.reduce((sum, cur) => {
-            sum += cur;
-            return sum;
-          }, 0),
-        },
-        {
-          name: '告警',
-          itemStyle: { color: '#f53f3f' },
-          value: alarmData.reduce((sum, cur) => {
-            sum += cur;
-            return sum;
-          }, 0),
-        },
-      ],
+      data: arr,
     });
   } else {
-    seriesData.push({
-      type: chartType,
-      barWidth: 10,
-      name: '预警',
-      symbol: 'emptyCircle',
-      symbolSize: 6,
-      showSymbol: false,
-      smooth: true,
-      data: preAlarmData,
-      itemStyle: {
-        color: '#ff7d00',
-      },
-    });
-    seriesData.push({
-      type: chartType,
-      barWidth: 10,
-      name: '告警',
-      symbol: 'emptyCircle',
-      symbolSize: 6,
-      showSymbol: false,
-      smooth: true,
-      data: alarmData,
-      itemStyle: {
-        color: '#f53f3f',
-      },
+    Object.keys(typesData).forEach((type) => {
+      seriesData.push({
+        type: chartType,
+        barWidth: 14,
+        name: orderTypeMaps[type].text + '工单',
+        data: typesData[type],
+        stack: 'order',
+        itemStyle: { color: orderTypeMaps[type].color },
+      });
     });
   }
 
   return (
-    <div
-      className={style['card-container']}
-      style={{ boxShadow: 'none', padding: '0' }}
-    >
+    <div className={style['card-container']} style={{ boxShadow: 'none' }}>
       <div
         className={style['card-title']}
         style={{ height: '2.6rem', lineHeight: '2.6rem' }}
@@ -119,8 +88,9 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }) {
         <div style={{ display: 'flex' }}>
           <span style={{ marginRight: '1rem' }}>{chartMaps[item.key]}</span>
           <CustomDatePicker
+            noDay
             onDispatch={(action) =>
-              onDispatch({ type: 'board/fetchWarningTrend', payload: action })
+              onDispatch({ type: 'board/fetchOrderTrend', payload: action })
             }
           />
         </div>
@@ -171,12 +141,12 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }) {
             }
             if (value === 'excel') {
               var aoa = [],
-                thead = ['对比项', '单位'];
-              categoryData.forEach((i) => thead.push(i));
+                thead = ['工单类型', '单位'];
+              categoryData.map((i) => thead.push(i));
               aoa.push(thead);
-              seriesData.forEach((item, index) => {
+              seriesData.forEach((item) => {
                 let temp = [];
-                temp.push(item.name, '次', ...item.data);
+                temp.push(item.name, '件', ...item.data);
                 aoa.push(temp);
               });
 
@@ -213,33 +183,19 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }) {
           notMerge={true}
           option={{
             tooltip: {
-              trigger: 'axis',
+              trigger: chartType === 'pie' ? 'item' : 'axis',
             },
-
             legend: {
               top: 4,
-              data: ['预警', '告警'],
-              icon: 'circle',
-              itemWidth: 10,
-              itemHeight: 10,
+              data: seriesData.map((i) => i.name),
             },
             grid: {
-              top: 30,
+              top: 40,
               left: 20,
               right: 40,
               bottom: 10,
               containLabel: true,
             },
-            // dataZoom:[
-            //     {
-            //         type:'slider',
-            //         show:true,
-            //         left:'93%',
-            //         yAxisIndex:[0],
-            //         startValue:0,
-            //         endValue:6
-            //     }
-            // ],
             xAxis: {
               type: 'category',
               data: categoryData,
@@ -259,18 +215,19 @@ function MachAlarmTrend({ item, data, chartMaps, onDispatch }) {
             },
             yAxis: {
               type: 'value',
+              splitArea: {
+                show: false,
+              },
+              name: '(件)',
               minInterval: 1,
-              name: '(次)',
-              splitArea: {
-                show: false,
-              },
-              splitArea: {
-                show: false,
-              },
               axisLine: { show: false },
               axisTick: { show: false },
-              splitLine: { show: true, lineStyle: { color: '#f0f0f0' } },
-
+              splitLine: {
+                show: true,
+                lineStyle: {
+                  color: '#f0f0f0',
+                },
+              },
               axisLabel: {
                 show: true,
                 color: 'rgba(0, 0, 0, 0.65)',
@@ -292,4 +249,4 @@ function areEqual(prevProps, nextProps) {
   }
 }
 
-export default React.memo(MachAlarmTrend, areEqual);
+export default React.memo(OrderTrend, areEqual);

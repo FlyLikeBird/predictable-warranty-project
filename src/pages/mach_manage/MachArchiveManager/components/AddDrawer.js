@@ -122,7 +122,7 @@ function AddDrawer({
             name: 'image.png',
             status: 'done',
             prevPath: equipmentPhotoPath,
-            url: `http://${config.apiHost}/upload/getFileByPath?filePath=${equipmentPhotoPath}`,
+            url: `https://${config.apiHost}/upload/getFileByPath?filePath=${equipmentPhotoPath}`,
           },
         ]);
       } else {
@@ -546,15 +546,25 @@ function AddDrawer({
                           if (result.length) {
                             values.sensorList = result;
                           }
-                          // new Promise((resolve, reject)=>{
-                          //     onDispatch({ type:'mach/addMachAsync', payload:{ values, resolve, reject, forEdit:info.forEdit }})
-                          // })
-                          // .then(()=>{
-                          //     message.success(`${ info.forEdit ? '更新' : '添加'}设备成功`);
-                          //     onClose();
-                          //     setFileList([]);
-                          // })
-                          // .catch(msg=>message.error(msg))
+                          new Promise((resolve, reject) => {
+                            onDispatch({
+                              type: 'mach/addMachAsync',
+                              payload: {
+                                values,
+                                resolve,
+                                reject,
+                                forEdit: info.forEdit,
+                              },
+                            });
+                          })
+                            .then(() => {
+                              message.success(
+                                `${info.forEdit ? '更新' : '添加'}设备成功`,
+                              );
+                              onClose();
+                              setFileList([]);
+                            })
+                            .catch((msg) => message.error(msg));
                         });
                       });
                     }}

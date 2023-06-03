@@ -174,7 +174,7 @@ export default {
           pageSize: 12,
         };
         Object.keys(optional).forEach((key) => {
-          if (optional[key]) {
+          if (optional[key] || optional[key] === 0) {
             params[key] = optional[key];
           }
         });
@@ -202,6 +202,7 @@ export default {
         user: { companyId, startDate, endDate },
         alarm: { optional },
       } = yield select();
+      let { resolve, reject } = action.payload || {};
       let params = {
         companyId,
         beginDate: startDate.format('YYYY-MM-DD'),
@@ -218,6 +219,9 @@ export default {
           type: 'getAlarmPercentResult',
           payload: { data: data.data },
         });
+        if (resolve) resolve();
+      } else {
+        if (reject) reject();
       }
     },
     *fetchAlarmTrend(action, { select, call, put }) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { connect } from 'dva';
 import { Table, message } from 'antd';
 import {
@@ -10,21 +10,19 @@ import {
 import TableSelector from './components/TableSelector';
 import style from '@/pages/IndexPage.css';
 
-const infoList = [
-  { key: '1', title: '本月需保养设备数', value: 31, unit: '台' },
-  { key: '2', title: '下月需保养设备数', value: 12, unit: '台' },
-  { key: '3', title: '超时未保养设备数', value: 12, unit: '台' },
-  { key: '4', title: '维保准时率', value: 92, unit: '%' },
-];
-
-function MaintainManager({ dispatch, user, order }) {
+function MaintainManager({ dispatch, user, order, mach, userList }) {
   const { authorized } = user;
-  const { maintainList, maintainDetail } = order;
+  const { maintainList, maintainSumInfo, maintainDetail } = order;
   useEffect(() => {
     if (authorized) {
-      dispatch({ type: 'order/fetchMaintainList' });
+      dispatch({ type: 'order/initMaintain' });
     }
   }, [authorized]);
+  useEffect(() => {
+    return () => {
+      dispatch({ type: 'order/reset' });
+    };
+  }, []);
   const columns = [
     { title: '设备名称', dataIndex: 'equipmentName' },
     {
@@ -69,33 +67,18 @@ function MaintainManager({ dispatch, user, order }) {
         </span>
       ),
     },
-    {
-      title: '操作',
-      render: (row) => {
-        return (
-          <>
-            <span
-              onClick={() => {
-                message.info('工单开发中...');
-              }}
-            >
-              详情
-            </span>
-          </>
-        );
-      },
-    },
   ];
-
+  const handleSearch = useCallback((obj) => {
+    dispatch({ type: 'order/setOptional', payload: obj });
+    dispatch({ type: 'order/fetchMaintainList' });
+  }, []);
   return (
     <>
       <div style={{ height: '90px' }}>
         <TableSelector
-          list={maintainList}
-          onSearch={(obj) => {
-            dispatch({ type: 'order/setOptional', payload: obj });
-            dispatch({ type: 'order/fetchMaintainList' });
-          }}
+          machList={mach.list}
+          userList={userList.list}
+          onSearch={handleSearch}
         />
       </div>
       <div style={{ height: 'calc( 100% - 90px)', paddingTop: '1rem' }}>
@@ -111,55 +94,59 @@ function MaintainManager({ dispatch, user, order }) {
               marginBottom: '1rem',
             }}
           >
-            {infoList.map((item, index) => (
-              <div
-                style={{
-                  width: 'calc(( 100% - 3rem)/4)',
-                  border: '1px solid #efeff3',
-                  padding: '1rem',
-                  display: 'flex',
-                  justifyContent: 'space-around',
-                  alignItems: 'center',
-                }}
-              >
-                <div
-                  style={{
-                    width: '50px',
-                    height: '50px',
-                    lineHeight: '54px',
-                    textAlign: 'center',
-                    borderRadius: '50%',
-                    background: '#f6f7fb',
-                    marginRight: '1rem',
-                  }}
-                >
-                  {item.key === '1' ? (
-                    <ToolFilled
-                      style={{ fontSize: '1.6rem', color: '#6988ef' }}
-                    />
-                  ) : item.key === '2' ? (
-                    <WalletFilled
-                      style={{ fontSize: '1.6rem', color: '#4bc7ff' }}
-                    />
-                  ) : item.key === '3' ? (
-                    <HistoryOutlined
-                      style={{ fontSize: '1.6rem', color: '#d06dff' }}
-                    />
-                  ) : (
-                    <CheckCircleFilled
-                      style={{ fontSize: '1.6rem', color: '#00b42a' }}
-                    />
-                  )}
-                </div>
-                <div style={{ flex: '1' }}>{item.title}</div>
-                <div style={{ flex: '1' }}>
-                  <span style={{ fontSize: '2rem', color: '#000' }}>
-                    {item.value}
-                  </span>
-                  <span style={{ fontSize: '0.8rem' }}>{item.unit}</span>
-                </div>
-              </div>
-            ))}
+            {maintainSumInfo.infoList && maintainSumInfo.infoList.length
+              ? maintainSumInfo.infoList.map((item) => (
+                  <div
+                    style={{
+                      width: 'calc(( 100% - 3rem)/4)',
+                      border: '1px solid #efeff3',
+                      padding: '1rem',
+                      display: 'flex',
+                      justifyContent: 'space-around',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        lineHeight: '54px',
+                        textAlign: 'center',
+                        borderRadius: '50%',
+                        background: '#f6f7fb',
+                        marginRight: '1rem',
+                      }}
+                    >
+                      {item.key === '1' ? (
+                        <ToolFilled
+                          style={{ fontSize: '1.6rem', color: '#6988ef' }}
+                        />
+                      ) : item.key === '2' ? (
+                        <WalletFilled
+                          style={{ fontSize: '1.6rem', color: '#4bc7ff' }}
+                        />
+                      ) : item.key === '3' ? (
+                        <HistoryOutlined
+                          style={{ fontSize: '1.6rem', color: '#d06dff' }}
+                        />
+                      ) : (
+                        <CheckCircleFilled
+                          style={{ fontSize: '1.6rem', color: '#00b42a' }}
+                        />
+                      )}
+                    </div>
+                    <div style={{ flex: '1' }}>{item.title}</div>
+                    <div style={{ flex: '1' }}>
+                      <span style={{ fontSize: '2rem', color: '#000' }}>
+                        {item.value}
+                      </span>
+                      <span style={{ fontSize: '0.8rem', margin: '0 0.5rem' }}>
+                        {item.unit}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              : null}
           </div>
           <Table
             columns={columns}
@@ -174,4 +161,9 @@ function MaintainManager({ dispatch, user, order }) {
   );
 }
 
-export default connect(({ user, order }) => ({ user, order }))(MaintainManager);
+export default connect(({ user, order, mach, userList }) => ({
+  user,
+  order,
+  mach,
+  userList,
+}))(MaintainManager);

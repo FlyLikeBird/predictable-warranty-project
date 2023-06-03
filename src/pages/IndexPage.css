@@ -207,10 +207,10 @@ html, body {
 }
 
 .self-table-container:global(.ant-table-wrapper) :global(.ant-pagination) {
-    position:fixed;
+    /* position:fixed;
     right:20px;
     bottom:10px;
-    margin:10px 0;
+    margin:10px 0; */
     /* justify-content: flex-start; */
 }
 .self-table-container:global(.ant-table-wrapper) :global(.ant-table) :global(.ant-table-tbody) tr:hover td > :global(.editable-cell-value-wrapper){

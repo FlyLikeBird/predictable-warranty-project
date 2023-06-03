@@ -7,47 +7,40 @@ import { downloadExcel } from '@/utils/array';
 import html2canvas from 'html2canvas';
 import style from '@/pages/IndexPage.css';
 
-function MultiBarChart({ data, title, forReport }) {
+function MultiBarChart({ data, orderTypeMaps, forReport }) {
   let echartsRef = useRef();
   let seriesData = [];
   let categoryData = [];
-  let totalAlarm = {};
-  let typeArr = [];
+  let typesData = {};
   categoryData = Object.keys(data).sort((a, b) => {
     let prevTime = new Date(a).getTime();
     let nowTime = new Date(b).getTime();
     return prevTime < nowTime ? -1 : 1;
   });
-  // 获取所有告警类型
-  categoryData.forEach((key) => {
-    if (data[key] && data[key].length) {
-      data[key].forEach((i) => {
-        if (!totalAlarm[i.warningRuleName]) {
-          typeArr.push(i.warningRuleName);
-          totalAlarm[i.warningRuleName] = [];
-        }
-      });
-    }
-  });
+
+  // 获取所有工单类型
+  if (categoryData.length) {
+    Object.keys(data[categoryData[0]]).forEach((type) => {
+      typesData[type] = [];
+    });
+  }
+
   // 构建堆叠柱图表所需的数据
   categoryData.forEach((key) => {
-    if (data[key] && data[key].length) {
-      data[key].forEach((i) => {
-        totalAlarm[i.warningRuleName].push(i.totalNum);
-      });
-    } else {
-      typeArr.forEach((i) => {
-        totalAlarm[i].push(0);
+    if (data[key]) {
+      Object.keys(data[key]).forEach((type) => {
+        typesData[type].push(data[key][type]);
       });
     }
   });
-  Object.keys(totalAlarm).forEach((type) => {
+  Object.keys(typesData).forEach((type) => {
     seriesData.push({
       type: 'bar',
       barWidth: 14,
-      name: type,
-      data: totalAlarm[type],
-      stack: 'alarm',
+      name: orderTypeMaps[type].text + '工单',
+      data: typesData[type],
+      stack: 'order',
+      itemStyle: { color: orderTypeMaps[type].color },
     });
   });
 
@@ -56,10 +49,15 @@ function MultiBarChart({ data, title, forReport }) {
       {forReport ? null : (
         <Radio.Group
           size="small"
-          style={{ position: 'absolute', right: '0', zIndex: '10' }}
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '0',
+            zIndex: '10',
+          }}
           onChange={(e) => {
             let value = e.target.value;
-            let fileTitle = '告警趋势';
+            let fileTitle = '工单趋势';
             if (value === 'download' && echartsRef.current) {
               html2canvas(echartsRef.current.ele, {
                 allowTaint: false,
@@ -99,7 +97,7 @@ function MultiBarChart({ data, title, forReport }) {
             }
             if (value === 'excel') {
               var aoa = [],
-                thead = ['告警类型', '单位'];
+                thead = ['工单类型', '单位'];
               categoryData.forEach((i) => thead.push(i));
               aoa.push(thead);
               seriesData.forEach((item, index) => {
@@ -131,22 +129,24 @@ function MultiBarChart({ data, title, forReport }) {
             trigger: 'axis',
           },
           title: {
-            text: title,
+            text: '工单趋势',
             textStyle: {
               fontSize: 14,
             },
             left: 20,
-            top: 10,
+            top: 20,
           },
           legend: {
             top: 20,
-            data: typeArr,
+            data: Object.keys(orderTypeMaps).map(
+              (type) => orderTypeMaps[type].text + '工单',
+            ),
             icon: 'circle',
             itemWidth: 10,
             itemHeight: 10,
           },
           grid: {
-            top: 60,
+            top: 80,
             left: 20,
             right: 40,
             bottom: 10,
@@ -177,28 +177,23 @@ function MultiBarChart({ data, title, forReport }) {
               show: true,
               color: 'rgba(0, 0, 0, 0.65)',
               formatter: (value) => {
-                if (forReport) {
-                  let strArr = value.split('-');
-                  return strArr[2];
-                } else {
-                  return value;
-                }
+                let strArr = value.split('-');
+                return strArr[2];
               },
             },
             axisTick: { show: false },
             axisLine: { show: true, lineStyle: { color: '#f0f0f0' } },
           },
-          color: ['#ff7d00', '#f53f3f', '#0fc6c2', '#fadc19', '#9fdb1d'],
           yAxis: {
             type: 'value',
             splitArea: {
               show: false,
             },
+            name: '(件)',
             minInterval: 1,
             splitArea: {
               show: false,
             },
-            name: '(件)',
             axisLine: { show: false },
             axisTick: { show: false },
             splitLine: { show: true, lineStyle: { color: '#f0f0f0' } },
