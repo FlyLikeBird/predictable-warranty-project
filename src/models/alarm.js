@@ -8,6 +8,7 @@ import {
   getRuleMachs,
   getRuleParams,
   getAlarmList,
+  updateAlarmInfo,
   getAlarmPercent,
   getAlarmTrend,
   getAlarmRank,
@@ -29,6 +30,12 @@ const initialState = {
     { title: '电表', key: 1 },
     { title: '震动', key: 4 },
   ],
+  statusMaps: {
+    0: '未处理',
+    1: '已转维修工单',
+    2: '已处理',
+    3: '已消警',
+  },
   ruleParams: [],
   alarmList: [],
   //  筛选条件
@@ -168,7 +175,7 @@ export default {
         currentPage = currentPage || 1;
         let params = {
           companyId,
-          beginData: startDate.format('YYYY-MM-DD'),
+          beginDate: startDate.format('YYYY-MM-DD'),
           endDate: endDate.format('YYYY-MM-DD'),
           page: currentPage,
           pageSize: 12,
@@ -178,6 +185,7 @@ export default {
             params[key] = optional[key];
           }
         });
+        yield put({ type: 'toggleLoading' });
         let { data } = yield call(getAlarmList, params);
         if (data && data.code === 200) {
           yield put({
@@ -187,6 +195,16 @@ export default {
         }
       } catch (err) {
         console.log(err);
+      }
+    },
+    *updateAlarmAsync(action, { select, call, put }) {
+      let { values, resolve, reject } = action.payload || {};
+      let { data } = yield call(updateAlarmInfo, values);
+      if (data && data.code === 200) {
+        if (resolve) resolve();
+        yield put({ type: 'fetchAlarmList' });
+      } else {
+        if (reject) reject(data.message);
       }
     },
     *initAnalysis(action, { select, call, put }) {
@@ -365,6 +383,7 @@ export default {
         console.log(err);
       }
     },
+
     *fetchRecordDetail(action, { select, call, put }) {
       try {
         let {
@@ -496,7 +515,13 @@ export default {
       return { ...state, ruleMachs: data };
     },
     getAlarmListResult(state, { payload: { data, currentPage, total } }) {
-      return { ...state, alarmList: data, currentPage, total };
+      return {
+        ...state,
+        alarmList: data,
+        currentPage,
+        total,
+        isLoading: false,
+      };
     },
     getAlarmPercentResult(state, { payload: { data } }) {
       return { ...state, alarmPercent: data };

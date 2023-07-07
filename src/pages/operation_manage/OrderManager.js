@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { connect } from 'dva';
-import { Button, Table, Modal, Drawer } from 'antd';
+import { Button, Table, Modal, Drawer, message } from 'antd';
 import {
   PlusOutlined,
   DownloadOutlined,
@@ -11,6 +11,8 @@ import OrderForm from './components/OrderForm';
 import style from '@/pages/IndexPage.css';
 import Icons from '../../../public/order-icons.png';
 import OrderDetailInfo from './components/OrderDetailInfo';
+import XLSX from 'xlsx';
+import { downloadExcel } from '@/utils/array';
 
 const IconFont = createFromIconfontCN({
   scriptUrl: '//at.alicdn.com/t/c/font_2314993_uvvxb10za8l.js',
@@ -22,7 +24,8 @@ const iconMaps = {
   2: 1,
   3: 6,
   4: 3,
-  5: 5,
+  5: 2,
+  6: 5,
 };
 function OrderManager({ dispatch, user, order, mach, userList }) {
   const { authorized, userInfo } = user;
@@ -87,7 +90,11 @@ function OrderManager({ dispatch, user, order, mach, userList }) {
       dataIndex: 'equipmentHeadName',
       render: (value) => <span>{value || '--'}</span>,
     },
-    { title: '生成时间', dataIndex: 'createTime' },
+    {
+      title: '生成时间',
+      dataIndex: 'createTime',
+      render: (value) => <span>{value.replace('T', ' ')}</span>,
+    },
     {
       title: '工单描述',
       dataIndex: 'workTicketsContent',
@@ -177,7 +184,55 @@ function OrderManager({ dispatch, user, order, mach, userList }) {
               </Button>
               <Button>批量导入</Button>
             </div>
-            <Button icon={<DownloadOutlined />}>下载</Button>
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={() => {
+                var aoa = [],
+                  thead = [];
+                // 请求所有数据再下载
+                new Promise((resolve, reject) => {
+                  dispatch({
+                    type: 'order/fetchOrderList',
+                    payload: { resolve, reject, pageSize: 9999 },
+                  });
+                })
+                  .then((data) => {
+                    let filterCols = columns.filter((i) => i.dataIndex);
+                    filterCols.forEach((i) => thead.push(i.title));
+                    aoa.push(thead);
+                    if (data.length) {
+                      data.forEach((item, index) => {
+                        let temp = [];
+                        filterCols.forEach((col) => {
+                          if (col.dataIndex === 'workTicketsType') {
+                            temp.push(
+                              orderTypeMaps[item[col.dataIndex]].text + '工单',
+                            );
+                          } else if (col.dataIndex === 'workTicketsSource') {
+                            temp.push(orderSourceMaps[item[col.dataIndex]]);
+                          } else if (col.dataIndex === 'workTicketsStatus') {
+                            temp.push(
+                              orderStatusMaps[item[col.dataIndex]].text,
+                            );
+                          } else {
+                            temp.push(item[col.dataIndex] || '--');
+                          }
+                        });
+                        aoa.push(temp);
+                      });
+
+                      var sheet = XLSX.utils.aoa_to_sheet(aoa);
+                      sheet['!cols'] = thead.map((i) => ({ wch: 16 }));
+                      downloadExcel(sheet, '工单列表.xlsx');
+                    } else {
+                      message.info('数据源为空');
+                    }
+                  })
+                  .catch((msg) => message.error(msg));
+              }}
+            >
+              下载
+            </Button>
           </div>
           <div className={style['card-content']}>
             <Table
@@ -221,7 +276,7 @@ function OrderManager({ dispatch, user, order, mach, userList }) {
         </Modal>
         {/* 操作工单逻辑 */}
         <Drawer
-          width="48%"
+          width="60%"
           open={currentOrder.workTicketsId ? true : false}
           onClose={() => setCurrentOrder({})}
           closable={false}

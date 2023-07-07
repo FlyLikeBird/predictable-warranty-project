@@ -10,17 +10,14 @@ import {
 import ReactEcharts from 'echarts-for-react';
 import html2canvas from 'html2canvas';
 
-const TextToKey = {
-  已转维修工单: 1,
-  未处理: 0,
-};
-
-function WarningTypePieChart({ data, title, type, statusData, theme }) {
-  // data = { '震动告警':10, '震动预警' : 30, '电流越限' : 3, '电压越限' : 5, '温度越限' : 14 };
-  // let data2 = { '已处理':10, '未处理':30, '自动转工单':25, '手动转工单':40 };
+function WarningTypePieChart({ data, title, statusMaps, theme }) {
   let textColor = 'rgba(0, 0, 0, 0.85)';
   let seriesData = [],
     seriesData2 = [];
+  let textToKey = {};
+  Object.keys(statusMaps).forEach((key) => {
+    textToKey[statusMaps[key]] = key;
+  });
   if (data.warningGroupByRuleMap) {
     Object.keys(data.warningGroupByRuleMap).forEach((key) => {
       seriesData.push({
@@ -32,7 +29,7 @@ function WarningTypePieChart({ data, title, type, statusData, theme }) {
   if (data.warningGroupByStatusMap) {
     Object.keys(data.warningGroupByStatusMap).forEach((key) => {
       seriesData2.push({
-        name: key == 1 ? '已转维修工单' : '未处理',
+        name: statusMaps[key],
         value: data.warningGroupByStatusMap[key],
       });
     });
@@ -105,7 +102,7 @@ function WarningTypePieChart({ data, title, type, statusData, theme }) {
               // let temp = findData(name, seriesData);
               return `${name}\xa0\xa0\xa0\xa0{value|${
                 data.warningGroupByStatusMap
-                  ? data.warningGroupByStatusMap[TextToKey[name]]
+                  ? data.warningGroupByStatusMap[textToKey[name]]
                   : 0
               }}{title|件}`;
             },

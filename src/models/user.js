@@ -89,7 +89,7 @@ let menuData = [
     child: [
       { menu_code: 'data_report_running', menu_name: '运行报表', menu_id: 11 },
       { menu_code: 'data_report_cost', menu_name: '成本报表', menu_id: 12 },
-      { menu_code: 'data_report_pdf', menu_name: '诊断报告', menu_id: 16 },
+      { menu_code: 'data_report_pdf', menu_name: '智慧报告', menu_id: 16 },
     ],
   },
   {

@@ -5,6 +5,13 @@ export default defineConfig({
   },
   dva: {},
   antd: {},
+  devServer: {
+    https: {
+      cert: 'localhost.crt',
+      ca: 'localhost.pem',
+      key: 'localhost-key.pem',
+    },
+  },
   dynamicImport: {},
   metas: [
     {
@@ -132,7 +139,7 @@ export default defineConfig({
             },
             {
               path: '/sys_manage/sys_manage_fee',
-              component: '@/pages/sys_manage/FeerateManager',
+              component: '@/pages/sys_manage/EleBilling',
             },
           ],
         },

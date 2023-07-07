@@ -24,7 +24,12 @@ function TableContainer({ list, category, dateColumn, currentPage, total }) {
       ellipsis: true,
     },
     { title: '单位', width: 60, render: () => <span>元</span> },
-    { title: '合计', width: 120, dataIndex: 'sumCost' },
+    {
+      title: '合计',
+      width: 120,
+      dataIndex: 'sumCost',
+      render: (value) => <span>{value || '--'}</span>,
+    },
     ...dateColumn.map((time, index) => ({
       title: time,
       children: category.map((item) => ({
@@ -33,7 +38,11 @@ function TableContainer({ list, category, dateColumn, currentPage, total }) {
         width: item.multi ? '140px' : '90px',
         render: (arr) => {
           let obj = arr[index];
-          return <span>{obj ? obj[item.dataIndex] : 0}</span>;
+          return (
+            <span>
+              {obj && obj[item.dataIndex] ? obj[item.dataIndex] : '--'}
+            </span>
+          );
         },
       })),
     })),

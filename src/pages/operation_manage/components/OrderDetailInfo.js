@@ -13,15 +13,13 @@ import {
   message,
 } from 'antd';
 import { EyeOutlined, createFromIconfontCN } from '@ant-design/icons';
-import Icons from '../../../../public/order-icons.png';
+import DispatchOrderForm from './DispatchOrderForm';
 import stepDoneIcon from '../../../../public/progress-done.png';
 import stepUndoneIcon from '../../../../public/progress-undone.png';
+import stepRejectIcon from '../../../../public/progress-reject.png';
 import AvatarIcon from '../../../../public/avatar-bg.png';
-import TestImg from '../../../../public/test.png';
 import style from './OrderDetailInfo.css';
 import IndexStyle from '@/pages/IndexPage.css';
-import zhCN from 'antd/es/date-picker/locale/zh_CN';
-import moment from 'moment';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -29,6 +27,7 @@ const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 18 },
 };
+let timer = null;
 const roleMaps = {
   0: '发布人',
   1: '派发人',
@@ -41,7 +40,7 @@ const IconFont = createFromIconfontCN({
 
 let fieldList = [
   { label: '设备名称', dataIndex: 'equipmentName' },
-  { label: '创建时间', dataIndex: 'createTime' },
+  { label: '创建时间', dataIndex: 'createTime', isTime: true },
   { label: '预计完成时间', dataIndex: 'predictedFinishTime', isTime: true },
   { label: '实际完成时间', dataIndex: 'actualFinishTime', isTime: true },
   { label: '工单来源', dataIndex: 'workTicketsSource', isSource: true },
@@ -65,18 +64,27 @@ function OrderDetailInfo({
 }) {
   const [form] = Form.useForm();
   const [img, setImg] = useState('');
-  const [info, setInfo] = useState({ visible: false, changedStatus: 0 });
+  const [info, setInfo] = useState({ visible: false, status: 0 });
   const [recordList, setRecordList] = useState([]);
   const [fittingList, setFittingList] = useState([]);
   const [historyList, setHistoryList] = useState([]);
   const statusText =
-    currentOrder.workTicketsStatus === 0
+    info.status === 0
       ? '分配'
-      : currentOrder.workTicketsStatus === 2
+      : info.status === 2
       ? '验收'
-      : currentOrder.workTicketsStatus === 4
+      : info.status === 4
       ? '挂起'
+      : info.status === 5
+      ? '驳回'
       : '';
+  let config = window.g;
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer);
+      timer = null;
+    };
+  }, []);
   useEffect(() => {
     // 获取工单的备件记录和历史记录
     if (currentOrder.workTicketsId) {
@@ -179,8 +187,9 @@ function OrderDetailInfo({
             </div>
           </div>
           <div>
-            {currentOrder.workTicketsStatus !== 4 &&
-            currentOrder.workTicketsStatus !== 3 ? (
+            {currentOrder.workTicketsStatus === 1 ||
+            currentOrder.workTicketsStatus === 2 ||
+            currentOrder.workTicketsStatus === 5 ? (
               <Button
                 type="primary"
                 style={{
@@ -188,14 +197,14 @@ function OrderDetailInfo({
                   marginRight: '1rem',
                   background: '#f77234',
                 }}
-                onClick={() => setInfo({ visible: true, changedStatus: 4 })}
+                onClick={() => setInfo({ visible: true, status: 4 })}
               >
                 挂起
               </Button>
             ) : null}
             {currentOrder.workTicketsStatus === 2 ? (
               <Button
-                onClick={() => setInfo({ visible: true, changedStatus: 1 })}
+                onClick={() => setInfo({ visible: true, status: 5 })}
                 style={{ marginRight: '0.5rem' }}
               >
                 驳回
@@ -209,7 +218,7 @@ function OrderDetailInfo({
                   background: '#165dff',
                   marginRight: '0.5rem',
                 }}
-                onClick={() => setInfo({ visible: true, changedStatus: 1 })}
+                onClick={() => setInfo({ visible: true, status: 0 })}
               >
                 分配工单
               </Button>
@@ -217,7 +226,7 @@ function OrderDetailInfo({
               <Button
                 type="primary"
                 style={{ border: 'none', background: '#165dff' }}
-                onClick={() => setInfo({ visible: true, changedStatus: 3 })}
+                onClick={() => setInfo({ visible: true, status: 2 })}
               >
                 验收通过
               </Button>
@@ -232,49 +241,58 @@ function OrderDetailInfo({
           >
             01 创建工单
           </div>
+          {/* 驳回工单回退到上一步，显示驳回状态 */}
+          {currentOrder.workTicketsStatus === 5 ? (
+            <div
+              className={`${style['step-item']} ${style['selected']}`}
+              style={{
+                backgroundImage: `url(${stepRejectIcon})`,
+              }}
+            >
+              02 验收未通过
+            </div>
+          ) : (
+            <div
+              className={`${style['step-item']} ${
+                currentOrder.workTicketsStatus > 0 ? style['selected'] : ''
+              }`}
+              style={{
+                backgroundImage: `url(${
+                  currentOrder.workTicketsStatus > 0
+                    ? stepDoneIcon
+                    : stepUndoneIcon
+                })`,
+              }}
+            >
+              02 工单执行
+            </div>
+          )}
+
           <div
             className={`${style['step-item']} ${
-              currentOrder.workTicketsStatus > 0 ? style['selected'] : ''
-            }`}
-            style={{
-              backgroundImage: `url(${
-                currentOrder.workTicketsStatus > 0
-                  ? stepDoneIcon
-                  : stepUndoneIcon
-              })`,
-            }}
-          >
-            02 工单执行
-          </div>
-          <div
-            className={`${style['step-item']} ${
-              currentOrder.workTicketsStatus > 1 &&
-              currentOrder.workTicketsStatus !== 4
+              currentOrder.workTicketsStatus === 2 ||
+              currentOrder.workTicketsStatus === 3
                 ? style['selected']
                 : ''
             }`}
             style={{
               backgroundImage: `url(${
-                currentOrder.workTicketsStatus > 1 &&
-                currentOrder.workTicketsStatus !== 4
+                currentOrder.workTicketsStatus === 2 ||
+                currentOrder.workTicketsStatus === 3
                   ? stepDoneIcon
                   : stepUndoneIcon
               })`,
             }}
           >
-            03 工单已完成
+            03 提交验收
           </div>
           <div
             className={`${style['step-item']} ${
-              currentOrder.workTicketsStatus > 2 &&
-              currentOrder.workTicketsStatus !== 4
-                ? style['selected']
-                : ''
+              currentOrder.workTicketsStatus === 3 ? style['selected'] : ''
             }`}
             style={{
               backgroundImage: `url(${
-                currentOrder.workTicketsStatus > 2 &&
-                currentOrder.workTicketsStatus !== 4
+                currentOrder.workTicketsStatus === 3
                   ? stepDoneIcon
                   : stepUndoneIcon
               })`,
@@ -284,24 +302,24 @@ function OrderDetailInfo({
           </div>
         </div>
         {/* 发布人和执行人 人员信息 */}
-        <div style={{ height: '100px', display: 'flex' }}>
-          {recordList.map((item) => (
-            <div style={{ width: '25%' }} key={item.recordId}>
-              <div style={{ margin: '0.5rem 0' }}>
-                {roleMaps[item.workTicketsStatus] || '执行人'}
-              </div>
-              <div style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <div style={{ marginRight: '1rem' }}>
-                  <img src={AvatarIcon} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 'bold' }}>{item.operatorName}</div>
-                  <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>厂务部主管</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* <div style={{ height: '100px', display: 'flex' }}>
+                    {recordList.map((item) => (
+                        <div style={{ width: '25%' }} key={item.recordId}>
+                            <div style={{ margin: '0.5rem 0' }}>
+                                {roleMaps[item.workTicketsStatus] || '执行人'}
+                            </div>
+                            <div style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <div style={{ marginRight: '1rem' }}>
+                                    <img src={AvatarIcon} />
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: 'bold' }}>{item.operatorName}</div>
+                                    <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>厂务部主管</div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div> */}
         {/* 工单详细信息和历史记录 */}
         <div
           style={{
@@ -329,7 +347,11 @@ function OrderDetailInfo({
                 {fieldList.map((item, index) => (
                   <div
                     key={index}
-                    style={{ width: '50%', marginBottom: '0.5rem' }}
+                    style={{
+                      width: '50%',
+                      marginBottom: '0.5rem',
+                      whiteSpace: 'nowrap',
+                    }}
                   >
                     <span
                       style={{
@@ -349,7 +371,7 @@ function OrderDetailInfo({
                         {item.isSource
                           ? orderSourceMaps[currentOrder[item.dataIndex]]
                           : item.isTime && currentOrder[item.dataIndex]
-                          ? currentOrder[item.dataIndex].split('T')[0]
+                          ? currentOrder[item.dataIndex].replace('T', ' ')
                           : currentOrder[item.dataIndex] || '--'}
                       </span>
                     )}
@@ -398,8 +420,23 @@ function OrderDetailInfo({
                 className={IndexStyle['self-table-container']}
                 style={{ padding: '0' }}
                 columns={[
-                  { title: '工单编号', dataIndex: 'workTicketsId' },
-                  { title: '创建时间', dataIndex: 'createTime' },
+                  {
+                    title: '工单编号',
+                    dataIndex: 'workTicketsId',
+                    render: (value) => (
+                      <span>
+                        {value}
+                        {currentOrder.workTicketsId === value ? (
+                          <Tag color="blue">当前</Tag>
+                        ) : null}
+                      </span>
+                    ),
+                  },
+                  {
+                    title: '创建时间',
+                    dataIndex: 'createTime',
+                    render: (value) => <span>{value.replace('T', ' ')}</span>,
+                  },
                   {
                     title: '执行人',
                     dataIndex: 'equipmentHeadName',
@@ -413,7 +450,11 @@ function OrderDetailInfo({
                           if (
                             row.workTicketsId !== currentOrder.workTicketsId
                           ) {
-                            onChange(row);
+                            onChange({});
+                            timer = setTimeout(() => {
+                              // console.log(row);
+                              onChange(row);
+                            }, 500);
                           }
                         }}
                       >
@@ -464,9 +505,21 @@ function OrderDetailInfo({
             </div>
             <Timeline className={style['custom-timeline']}>
               {recordList
+                .concat()
                 .sort((a, b) => b.recordId - a.recordId)
                 .map((item, index) => (
-                  <Timeline.Item key={item.recordId}>
+                  <Timeline.Item
+                    key={item.recordId}
+                    color={
+                      item.workTicketsStatus === 4
+                        ? 'gray'
+                        : item.workTicketsStatus === 3
+                        ? 'green'
+                        : item.workTicketsStatus === 5
+                        ? 'red'
+                        : 'blue'
+                    }
+                  >
                     <div className={style['timeline-item']}>
                       <div className={style['timeline-item-head']}>
                         <div>
@@ -474,21 +527,24 @@ function OrderDetailInfo({
                             ? '挂起中'
                             : item.recordContent}
                         </div>
-                        <div>{item.createTime}</div>
+                        <div>{item.createTime.replace('T', ' ')}</div>
                       </div>
                       <div className={style['timeline-item-content']}>
                         <div style={{ color: '#000' }}>
                           {item.workTicketsContent}
                         </div>
                         <div>
-                          {item.photos && item.photos.length
-                            ? item.photos.map((item) => (
-                                <div className={style['img-wrapper']}>
-                                  <img src={TestImg} />
+                          {item.fileList && item.fileList.length
+                            ? item.fileList.map((item) => (
+                                <div
+                                  className={style['img-wrapper']}
+                                  // style={{ backgroundImage:`url(https://${config.apiHost}/upload/getFileByPath?filePath=${item})` }}
+                                >
+                                  <img
+                                    src={`https://${config.apiHost}/upload/getFileByPath?filePath=${item}`}
+                                  />
                                   <div className={style['img-wrapper-mask']}>
-                                    <EyeOutlined
-                                      onClick={() => setImg('test')}
-                                    />
+                                    <EyeOutlined onClick={() => setImg(item)} />
                                   </div>
                                 </div>
                               ))
@@ -527,106 +583,21 @@ function OrderDetailInfo({
       {/* 分配订单 */}
       <Modal
         open={info.visible}
+        width={580}
         onCancel={() => setInfo({ visible: false })}
         title={statusText + '工单'}
         footer={null}
       >
-        <Form
-          form={form}
-          {...layout}
-          onFinish={(values) => {
-            // console.log(values);
-            let userInfo = userList.filter(
-              (i) => i.userId === values.equipmentHeadId,
-            )[0];
-            let obj;
-            if (currentOrder.workTicketsStatus === 0) {
-              obj = {
-                workTicketsId: currentOrder.workTicketsId,
-                workTicketsStatus: 1,
-                workTicketsContent: values.workTicketsContent,
-                equipmentHeadId: values.equipmentHeadId,
-                equipmentHeadName: userInfo.userName,
-                predictedFinishTime: values.predictedFinishTime.format(
-                  'YYYY-MM-DD 00:00:00',
-                ),
-              };
-            } else {
-              obj = {
-                workTicketsId: currentOrder.workTicketsId,
-                workTicketsStatus: info.changedStatus,
-                workTicketsContent: values.workTicketsContent,
-              };
-              if (info.changedStatus === 3) {
-                obj.assessment = values.assessment;
-              }
-            }
-            new Promise((resolve, reject) => {
-              onDispatch({
-                type: 'order/addOrderAsync',
-                payload: { values: obj, resolve, reject, forEdit: true },
-              });
-            })
-              .then(() => {
-                message.success(statusText + '工单成功');
-                setInfo({ visible: false });
-                form.resetFields();
-                onClose();
-              })
-              .catch((msg) => message.error(msg));
-          }}
-        >
-          {currentOrder.workTicketsStatus === 0 ? (
-            <Form.Item
-              name="equipmentHeadId"
-              label="指定对象"
-              rules={[{ required: true, message: '请指定要分配的对象' }]}
-            >
-              <Select style={{ width: '100%' }}>
-                {userList
-                  .filter((i) => i.userId != userId)
-                  .map((item) => (
-                    <Option value={item.userId} key={item.userId}>
-                      {item.userName}
-                    </Option>
-                  ))}
-              </Select>
-            </Form.Item>
-          ) : null}
-          {currentOrder.workTicketsStatus === 0 ? (
-            <Form.Item
-              name="predictedFinishTime"
-              label="建议完成时间"
-              rules={[{ required: true, message: '时间不能为空' }]}
-            >
-              <DatePicker locale={zhCN} style={{ width: '100%' }} />
-            </Form.Item>
-          ) : null}
-          {info.changedStatus === 3 ? (
-            <Form.Item
-              name="assessment"
-              label="评分"
-              rules={[{ required: true, message: '请给工单一个评分' }]}
-            >
-              <Rate />
-            </Form.Item>
-          ) : null}
-          <Form.Item name="workTicketsContent" label="备注">
-            <TextArea placeholder="请添加一些描述信息" />
-          </Form.Item>
-
-          <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 6 }}>
-            <Button
-              style={{ marginRight: '1rem' }}
-              onClick={() => setInfo({ visible: false })}
-            >
-              取消
-            </Button>
-            <Button type="primary" htmlType="submit">
-              {statusText}
-            </Button>
-          </Form.Item>
-        </Form>
+        <DispatchOrderForm
+          info={info}
+          statusText={statusText}
+          currentOrder={currentOrder}
+          userList={userList}
+          userId={userId}
+          onDispatch={onDispatch}
+          onClose={onClose}
+          onReset={() => setInfo({ visible: false })}
+        />
       </Modal>
       {/* 预览图片 */}
       <Modal
@@ -636,7 +607,9 @@ function OrderDetailInfo({
         onCancel={() => setImg('')}
       >
         <div style={{ position: 'relative' }}>
-          <img src={TestImg} />
+          <img
+            src={`https://${config.apiHost}/upload/getFileByPath?filePath=${img}`}
+          />
         </div>
       </Modal>
     </>

@@ -32,14 +32,26 @@ function MachDetailManager({
     { label: '负荷率', value: currentMach.load || '--', unit: 'kw' },
     { label: '电流', value: currentMach.electricity || '--', unit: 'A' },
     { label: '电压', value: currentMach.voltage || '--', unit: 'V' },
-    { label: '最后一次上传时间', value: currentMach.lastUploadTime || '--' },
+    {
+      label: '最后一次上传时间',
+      value: currentMach.lastUploadTime || '--',
+      type: 'time',
+    },
     { label: '开机时长', value: currentMach.workTime || '--', unit: 'h' },
-    { label: '建议保养时间', value: currentMach.adviceUpkeepTime || '--' },
-    { label: '必须保养时间', value: currentMach.mustUpkeepTime || '--' },
+    {
+      label: '建议保养时间',
+      value: currentMach.adviceUpkeepTime || '--',
+      type: 'time',
+    },
+    {
+      label: '必须保养时间',
+      value: currentMach.mustUpkeepTime || '--',
+      type: 'time',
+    },
   ];
   let config = window.g;
   let imgPath = currentMach.equipmentPhotoPath
-    ? `http://${config.apiHost}/upload/getFileByPath?filePath=${currentMach.equipmentPhotoPath}`
+    ? `https://${config.apiHost}/upload/getFileByPath?filePath=${currentMach.equipmentPhotoPath}`
     : '';
   let ImgCom = imgPath ? (
     <div style={{ height: '100%', textAlign: 'center' }}>
@@ -214,7 +226,9 @@ function MachDetailManager({
                               />
                             ) : null}
                             <span style={{ marginRight: '4px' }}>
-                              {item.value}
+                              {item.type === 'time'
+                                ? item.value.replace('T', ' ')
+                                : item.value}
                             </span>
                             <span>{item.unit || ''}</span>
                           </div>

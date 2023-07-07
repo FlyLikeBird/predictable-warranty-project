@@ -139,7 +139,7 @@ function AlarmSetting({ dispatch, user, alarm, mach }) {
   ];
 
   return (
-    <div className={style['card-container']}>
+    <div className={style['card-container']} style={{ boxShadow: 'none' }}>
       <div style={{ padding: '10px 20px 0 20px' }}>
         <Button
           type="primary"

@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider &&  set PORT=8007 && umi dev",
+    "start": "set HTTPS=true && set NODE_OPTIONS=--openssl-legacy-provider &&  set PORT=8007 && umi dev",
     "build": "set NODE_OPTIONS=--openssl-legacy-provider && umi build",
     "postinstall": "umi generate tmp",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",

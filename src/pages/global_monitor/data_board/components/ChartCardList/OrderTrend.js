@@ -70,7 +70,9 @@ function OrderTrend({ item, data, chartMaps, onDispatch }) {
     Object.keys(typesData).forEach((type) => {
       seriesData.push({
         type: chartType,
-        barWidth: 14,
+        barWidth: 10,
+        smooth: true,
+        showSymbol: false,
         name: orderTypeMaps[type].text + '工单',
         data: typesData[type],
         stack: 'order',

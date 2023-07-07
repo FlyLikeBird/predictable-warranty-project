@@ -26,6 +26,7 @@ const initialState = {
     2: { text: '待验收', color: '#a073df' },
     3: { text: '已完成', color: '#85dd96' },
     4: { text: '挂起', color: '#f772bc' },
+    5: { text: '驳回', color: '#e76464' },
   },
   orderSourceMaps: {
     1: '告警转工单',
@@ -61,14 +62,15 @@ export default {
         user: { companyId, startDate, endDate },
         order: { optional },
       } = yield select();
-      let { currentPage } = action.payload || {};
+      let { resolve, reject, currentPage, pageSize } = action.payload || {};
       currentPage = currentPage || 1;
+      pageSize = pageSize || 10;
       let params = {
         companyId,
         beginDate: startDate.format('YYYY-MM-DD'),
         endDate: endDate.format('YYYY-MM-DD'),
         page: currentPage,
-        pageSize: 10,
+        pageSize,
       };
       Object.keys(optional).forEach((key) => {
         if (optional[key] && optional[key] !== 'all') {
@@ -81,6 +83,7 @@ export default {
           type: 'getOrderListResult',
           payload: { data: data.data, currentPage, total: data.total },
         });
+        if (resolve) resolve(data.data);
       }
     },
     *fetchOrderDetail(action, { put, call, select }) {
@@ -346,7 +349,7 @@ export default {
               : 0,
         });
       });
-      infoList.push({ key: 5, title: '本月工单数', value: total });
+      infoList.push({ key: 6, title: '本月工单数', value: total });
       data.infoList = infoList;
       return { ...state, statusInfo: data };
     },

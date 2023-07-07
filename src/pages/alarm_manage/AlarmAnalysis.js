@@ -9,7 +9,7 @@ import style from '@/pages/IndexPage.css';
 
 function AlarmAnalysis({ dispatch, user, mach, alarm }) {
   const { authorized } = user;
-  const { alarmPercent, alarmTrend, alarmRank } = alarm;
+  const { alarmPercent, alarmTrend, statusMaps, alarmRank } = alarm;
   useEffect(() => {
     if (authorized) {
       dispatch({ type: 'user/toggleTimeType', payload: '2' });
@@ -41,7 +41,11 @@ function AlarmAnalysis({ dispatch, user, mach, alarm }) {
               className={style['card-container']}
               style={{ boxShadow: 'none' }}
             >
-              <PieChart title="总告警占比" data={alarmPercent} />
+              <PieChart
+                title="总告警占比"
+                data={alarmPercent}
+                statusMaps={statusMaps}
+              />
             </div>
           </div>
           <div

@@ -112,6 +112,19 @@ export function getAlarmList(data = {}) {
   });
 }
 
+export function updateAlarmInfo(data = {}) {
+  let token = apiToken();
+  data.token = token;
+  let str = translateObj(data);
+  return request('/warning/updateEquipmentWarningInfo', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: str,
+  });
+}
+
 export function getAlarmPercent(data = {}) {
   let token = apiToken();
   data.token = token;

@@ -7,7 +7,7 @@ import style from '../AnalysisReport.css';
 import IndexStyle from '@/pages/IndexPage.css';
 
 function PageItem0({ alarm, order }) {
-  const { alarmPercent } = alarm;
+  const { alarmPercent, statusMaps } = alarm;
   const { statusInfo, orderTypeMaps, orderStatusMaps } = order;
   return (
     <div className={style['page-container']}>
@@ -185,7 +185,11 @@ function PageItem0({ alarm, order }) {
           marginBottom: '1rem',
         }}
       >
-        <PieChart title="告警类型和状态分布" data={alarmPercent} />
+        <PieChart
+          title="告警类型和状态分布"
+          data={alarmPercent}
+          statusMaps={statusMaps}
+        />
       </div>
       <div
         className={IndexStyle['card-container']}

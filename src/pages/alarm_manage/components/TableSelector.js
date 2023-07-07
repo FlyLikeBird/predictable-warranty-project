@@ -53,7 +53,7 @@ function TableSelector({ machList, onSearch }) {
             marginRight: '1rem',
           }}
         >
-          <span>告警类型</span>
+          <span>告警等级</span>
           <Select
             style={{ flex: '1', marginLeft: '0.5rem' }}
             value={warningType}
